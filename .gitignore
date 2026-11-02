@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+node_modules/.tmp
+.vite
+coverage
+server/php/config.php
+samples/tmp
+*.tsbuildinfo

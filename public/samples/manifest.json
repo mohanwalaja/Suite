@@ -1,0 +1,307 @@
+{
+  "generatedAt": "2026-11-02T04:18:00.317Z",
+  "count": 30,
+  "compositions": 15,
+  "posters": [
+    {
+      "file": "01-murugan-vel-vel.jpg",
+      "title": "Murugan — Vel Vel",
+      "category": "Lord Murugan",
+      "composition": "Full-Screen Illustrated Hero",
+      "palette": "Fire & Ash",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "02-jathagam-editorial.jpg",
+      "title": "Jathagam — editorial",
+      "category": "Birth Jathagam",
+      "composition": "Editorial Typography",
+      "palette": "Cosmic Indigo",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "03-consultation-luxury-panel.jpg",
+      "title": "Consultation — luxury panel",
+      "category": "Astrology Services",
+      "composition": "Asymmetric Luxury",
+      "palette": "Midnight Gold",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "04-ganesha-circular-mandala.jpg",
+      "title": "Ganesha — circular mandala",
+      "category": "Lord Ganesha",
+      "composition": "Circular Mandala",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "05-durga-diagonal-field.jpg",
+      "title": "Durga — diagonal field",
+      "category": "Goddess Durga",
+      "composition": "Diagonal Geometric",
+      "palette": "Fire & Ash",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "06-navagraha-cosmic-wheel.jpg",
+      "title": "Navagraha — cosmic wheel",
+      "category": "Navagraha",
+      "composition": "Cosmic Astrology",
+      "palette": "Cosmic Indigo",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "07-temple-event-split-panel.jpg",
+      "title": "Temple event — split panel",
+      "category": "Temple Events",
+      "composition": "Split Panel",
+      "palette": "Saffron Dawn",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "08-festival-illustrated-story.jpg",
+      "title": "Festival — illustrated story",
+      "category": "Festival Greetings",
+      "composition": "Illustrated Storytelling",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "09-baby-naming-minimal.jpg",
+      "title": "Baby naming — minimal",
+      "category": "Baby Naming Letters",
+      "composition": "Minimal Luxury",
+      "palette": "Lotus Rose",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "10-muhurtham-infographic.jpg",
+      "title": "Muhurtham — infographic",
+      "category": "Subha Muhurtham",
+      "composition": "Premium Infographic",
+      "palette": "Ivory Noir",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "11-deepam-layered-collage.jpg",
+      "title": "Deepam — layered collage",
+      "category": "Festival Greetings",
+      "composition": "Artistic Layered Collage",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "12-shiva-cinematic-story.jpg",
+      "title": "Shiva — cinematic story",
+      "category": "Lord Shiva",
+      "composition": "Cinematic Devotional",
+      "palette": "Deep Ocean",
+      "width": 1080,
+      "height": 1920,
+      "issues": 0
+    },
+    {
+      "file": "13-temple-swiss-grid.jpg",
+      "title": "Temple — swiss grid",
+      "category": "Temple Events",
+      "composition": "Swiss Grid",
+      "palette": "Saffron Dawn",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "14-matching-decorative-frame.jpg",
+      "title": "Matching — decorative frame",
+      "category": "Wedding Matching",
+      "composition": "Decorative Frame",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "15-services-bold-campaign.jpg",
+      "title": "Services — bold campaign",
+      "category": "Astrology Services",
+      "composition": "Bold Advertising Campaign",
+      "palette": "Midnight Gold",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "16-shiva-hero-story.jpg",
+      "title": "Shiva — hero story",
+      "category": "Lord Shiva",
+      "composition": "Full-Screen Illustrated Hero",
+      "palette": "Midnight Gold",
+      "width": 1080,
+      "height": 1920,
+      "issues": 0
+    },
+    {
+      "file": "17-ganesha-editorial.jpg",
+      "title": "Ganesha — editorial",
+      "category": "Lord Ganesha",
+      "composition": "Editorial Typography",
+      "palette": "Saffron Dawn",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "18-jathagam-square-cosmic.jpg",
+      "title": "Jathagam — square cosmic",
+      "category": "Birth Jathagam",
+      "composition": "Cosmic Astrology",
+      "palette": "Midnight Gold",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "19-greeting-illustrated-square.jpg",
+      "title": "Greeting — illustrated square",
+      "category": "Festival Greetings",
+      "composition": "Illustrated Storytelling",
+      "palette": "Emerald Heritage",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "20-matching-landscape-split.jpg",
+      "title": "Matching — landscape split",
+      "category": "Wedding Matching",
+      "composition": "Split Panel",
+      "palette": "Temple Maroon",
+      "width": 1200,
+      "height": 628,
+      "issues": 0
+    },
+    {
+      "file": "21-services-landscape-grid.jpg",
+      "title": "Services — landscape grid",
+      "category": "Astrology Services",
+      "composition": "Swiss Grid",
+      "palette": "Midnight Gold",
+      "width": 1200,
+      "height": 628,
+      "issues": 0
+    },
+    {
+      "file": "22-festival-bold-square.jpg",
+      "title": "Festival — bold square",
+      "category": "Festival Greetings",
+      "composition": "Bold Advertising Campaign",
+      "palette": "Emerald Heritage",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "23-murugan-cinematic.jpg",
+      "title": "Murugan — cinematic",
+      "category": "Lord Murugan",
+      "composition": "Cinematic Devotional",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "24-durga-hero-square.jpg",
+      "title": "Durga — hero square",
+      "category": "Goddess Durga",
+      "composition": "Full-Screen Illustrated Hero",
+      "palette": "Royal Plum",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "25-naming-framed-square.jpg",
+      "title": "Naming — framed square",
+      "category": "Baby Naming Letters",
+      "composition": "Decorative Frame",
+      "palette": "Sky Ceremony",
+      "width": 1080,
+      "height": 1080,
+      "issues": 0
+    },
+    {
+      "file": "26-muhurtham-diagonal.jpg",
+      "title": "Muhurtham — diagonal",
+      "category": "Subha Muhurtham",
+      "composition": "Diagonal Geometric",
+      "palette": "Temple Maroon",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "27-navagraha-data-layout.jpg",
+      "title": "Navagraha — data layout",
+      "category": "Navagraha",
+      "composition": "Premium Infographic",
+      "palette": "Cosmic Indigo",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "28-temple-collage-story.jpg",
+      "title": "Temple — collage story",
+      "category": "Temple Events",
+      "composition": "Artistic Layered Collage",
+      "palette": "Saffron Dawn",
+      "width": 1080,
+      "height": 1920,
+      "issues": 0
+    },
+    {
+      "file": "29-reading-minimal-portrait.jpg",
+      "title": "Reading — minimal portrait",
+      "category": "Astrology Services",
+      "composition": "Minimal Luxury",
+      "palette": "Monochrome Studio",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    },
+    {
+      "file": "30-greeting-mandala-portrait.jpg",
+      "title": "Greeting — mandala portrait",
+      "category": "Festival Greetings",
+      "composition": "Circular Mandala",
+      "palette": "Saffron Dawn",
+      "width": 1080,
+      "height": 1350,
+      "issues": 0
+    }
+  ]
+}
