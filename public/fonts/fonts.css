@@ -1,0 +1,50 @@
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:400;src:url('/fonts/cormorant-garamond.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Cinzel';font-style:normal;font-weight:400;src:url('/fonts/cinzel.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Playfair Display';font-style:normal;font-weight:400;src:url('/fonts/playfair-display.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Lora';font-style:normal;font-weight:400;src:url('/fonts/lora.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Marcellus';font-style:normal;font-weight:400;src:url('/fonts/marcellus.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:400;src:url('/fonts/fraunces.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Prata';font-style:normal;font-weight:400;src:url('/fonts/prata.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Bodoni Moda';font-style:normal;font-weight:400;src:url('/fonts/bodoni-moda.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Libre Baskerville';font-style:normal;font-weight:400;src:url('/fonts/libre-baskerville.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:400;src:url('/fonts/alegreya.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Cormorant';font-style:normal;font-weight:400;src:url('/fonts/cormorant.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Forum';font-style:normal;font-weight:400;src:url('/fonts/forum.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Spectral';font-style:normal;font-weight:400;src:url('/fonts/spectral.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'DM Serif Display';font-style:normal;font-weight:400;src:url('/fonts/dm-serif-display.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Gilda Display';font-style:normal;font-weight:400;src:url('/fonts/gilda-display.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Bellefair';font-style:normal;font-weight:400;src:url('/fonts/bellefair.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Vollkorn';font-style:normal;font-weight:400;src:url('/fonts/vollkorn.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Cardo';font-style:normal;font-weight:400;src:url('/fonts/cardo.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'EB Garamond';font-style:normal;font-weight:400;src:url('/fonts/eb-garamond.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Crimson Text';font-style:normal;font-weight:400;src:url('/fonts/crimson-text.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Italiana';font-style:normal;font-weight:400;src:url('/fonts/italiana.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Philosopher';font-style:normal;font-weight:400;src:url('/fonts/philosopher.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Yeseva One';font-style:normal;font-weight:400;src:url('/fonts/yeseva-one.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Alice';font-style:normal;font-weight:400;src:url('/fonts/alice.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Noto Serif';font-style:normal;font-weight:400;src:url('/fonts/noto-serif.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Kaisei Decol';font-style:normal;font-weight:400;src:url('/fonts/kaisei-decol.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Vidaloka';font-style:normal;font-weight:400;src:url('/fonts/vidaloka.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Old Standard TT';font-style:normal;font-weight:400;src:url('/fonts/old-standard-tt.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Fanwood Text';font-style:normal;font-weight:400;src:url('/fonts/fanwood-text.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Gentium Plus';font-style:normal;font-weight:400;src:url('/fonts/gentium-plus.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:400;src:url('/fonts/newsreader.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Gelasio';font-style:normal;font-weight:400;src:url('/fonts/gelasio.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Sorts Mill Goudy';font-style:normal;font-weight:400;src:url('/fonts/sorts-mill-goudy.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Neuton';font-style:normal;font-weight:400;src:url('/fonts/neuton.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Amiri';font-style:normal;font-weight:400;src:url('/fonts/amiri.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Oranienbaum';font-style:normal;font-weight:400;src:url('/fonts/oranienbaum.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Playfair';font-style:normal;font-weight:400;src:url('/fonts/playfair.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Lustria';font-style:normal;font-weight:400;src:url('/fonts/lustria.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Quattrocento';font-style:normal;font-weight:400;src:url('/fonts/quattrocento.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Halant';font-style:normal;font-weight:400;src:url('/fonts/halant.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Outfit';font-style:normal;font-weight:400;src:url('/fonts/outfit.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:400;src:url('/fonts/manrope.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Sora';font-style:normal;font-weight:400;src:url('/fonts/sora.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:400;src:url('/fonts/montserrat.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Josefin Sans';font-style:normal;font-weight:400;src:url('/fonts/josefin-sans.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Raleway';font-style:normal;font-weight:400;src:url('/fonts/raleway.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400;src:url('/fonts/space-grotesk.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Urbanist';font-style:normal;font-weight:400;src:url('/fonts/urbanist.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Jost';font-style:normal;font-weight:400;src:url('/fonts/jost.woff2') format('woff2');font-display:swap;}
+@font-face{font-family:'Mulish';font-style:normal;font-weight:400;src:url('/fonts/mulish.woff2') format('woff2');font-display:swap;}

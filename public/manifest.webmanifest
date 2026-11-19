@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "ASTRO SIVAM Poster Studio",
+  "short_name": "Poster Studio",
+  "description": "4:5 portrait posters with the transparent ASTRO SIVAM logo and wordmark.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f7f5",
+  "theme_color": "#251b2c",
+  "icons": [
+    { "src": "/brand/official-icon.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/brand/official-icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}
