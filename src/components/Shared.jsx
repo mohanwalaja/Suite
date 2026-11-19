@@ -63,17 +63,7 @@ export function Poster({ design, small = false, className = '' }) {
     return () => {
       alive = false;
     };
-  }, [
-    design.topic,
-    design.headline,
-    design.tagline,
-    design.styleId,
-    design.font,
-    design.palette,
-    design.format,
-    small,
-    near,
-  ]);
+  }, [design, small, near]);
   return (
     <>
       <canvas

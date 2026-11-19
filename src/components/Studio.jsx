@@ -1,4 +1,4 @@
-import { PORTRAIT } from '../../shared/poster-spec.js';
+import { PORTRAIT, LOGO_POSITIONS, LOGO_SIZE } from '../../shared/poster-spec.js';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   RectangleVertical,
@@ -596,6 +596,41 @@ export function Studio({
               <LockKeyhole size={11} /> Always on
             </span>
           </div>
+          {tab === 'Design' && (
+            <div className="signature-controls">
+              <label className="field compact-field">
+                <span className="field-label">Signature place</span>
+                <select
+                  aria-label="Signature place"
+                  value={design.logoPosition || 'top-left'}
+                  onChange={(e) => patch({ logoPosition: e.target.value })}
+                >
+                  {LOGO_POSITIONS.map((position) => (
+                    <option key={position} value={position}>
+                      {position
+                        .split('-')
+                        .map((part) => part[0].toUpperCase() + part.slice(1))
+                        .join(' ')}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field compact-field">
+                <span className="field-label">
+                  Signature size <em>{Math.round((design.logoSize ?? LOGO_SIZE.default) * 100)}%</em>
+                </span>
+                <input
+                  aria-label="Signature size"
+                  type="range"
+                  min={Math.round(LOGO_SIZE.min * 100)}
+                  max={Math.round(LOGO_SIZE.max * 100)}
+                  step="2"
+                  value={Math.round((design.logoSize ?? LOGO_SIZE.default) * 100)}
+                  onChange={(e) => patch({ logoSize: Number(e.target.value) / 100 })}
+                />
+              </label>
+            </div>
+          )}
         </section>
       </div>
       <section className="style-section" id="styles">

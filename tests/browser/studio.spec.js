@@ -42,6 +42,25 @@ test('150 original designs, selectable fonts, palettes, and correctly sized PNG 
   expect(png.readUInt32BE(20)).toBe(1350);
 });
 
+test('the official signature can be repositioned and resized without being removed', async ({
+  page,
+}) => {
+  const canvas = page.locator('.canvas-mat canvas');
+  await expect(canvas).toHaveAttribute('data-rendered', 'true');
+  const before = await canvas.evaluate((c) => c.toDataURL());
+  await page.getByLabel('Signature place').selectOption('top-right');
+  await page.getByLabel('Signature size').fill('70');
+  await expect(canvas).toHaveAttribute('data-rendered', 'true');
+  await page.waitForTimeout(250);
+  const after = await canvas.evaluate((c) => c.toDataURL());
+  expect(after).not.toEqual(before);
+  await expect(page.getByText('Always on', { exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: 'Layers' }).click();
+  await page.getByRole('button', { name: /Brand signature/ }).click();
+  await expect(page.getByLabel('Logo placement')).toHaveValue('top-right');
+  await expect(page.getByLabel('Logo size')).toHaveValue('70');
+});
+
 test('service copy, editable captions, and durable drafts', async ({ page }) => {
   await page.getByRole('button', { name: 'Birth Jathagam', exact: true }).click();
   await page.getByRole('button', { name: /Marriage Compatibility The art/ }).click();
@@ -207,6 +226,7 @@ test('all 200 preview models retain original logo ink and show the real artwork 
     const { illustrationImage } = await import('/src/art/illustration.js');
     const { modelFor } = await import('/src/art/models.js');
     const { styles, topics, newDesign, getPalette } = await import('/src/catalogue.js');
+    const { logoRect } = await import('/shared/poster-spec.js');
     const orig = await imageOf('/brand/official-logo.png');
     const cv = () => document.createElement('canvas'),
       live = cv(),
@@ -219,10 +239,11 @@ test('all 200 preview models retain original logo ink and show the real artwork 
     const masks = new Map();
     function mask(w, h) {
       if (masks.has(w)) return masks.get(w);
-      const x = w * 0.065,
-        y = h * 0.05,
-        lw = w * 0.46,
-        lh = (lw * orig.naturalHeight) / orig.naturalWidth;
+      const { x, y, width: lw, height: lh } = logoRect(
+        w,
+        h,
+        orig.naturalWidth / orig.naturalHeight,
+      );
       const pad = Math.ceil(w * 0.012),
         bounds = [
           Math.floor(x) - pad,

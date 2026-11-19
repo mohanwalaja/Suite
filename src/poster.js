@@ -1,5 +1,12 @@
 import { localImage } from './local-pictures.js';
-import { BRAND, canvasSize, exportSizeFor, EXPORT_FORMATS } from '../shared/poster-spec.js';
+import {
+  BRAND,
+  canvasSize,
+  exportSizeFor,
+  EXPORT_FORMATS,
+  logoRect,
+  logoScaleFor,
+} from '../shared/poster-spec.js';
 import { fonts, getPalette } from './catalogue.js';
 import { collectionInfo, modelFor } from './art/models.js';
 import { illustrationImage } from './art/illustration.js';
@@ -200,16 +207,14 @@ function goldKeyline(logo) {
   }
   return inkMask;
 }
-function signature(c, w, h, logo, lightPaper, position = 'top-left') {
-  const width = w * 0.46;
-  const height = (width * logo.naturalHeight) / logo.naturalWidth;
-  const y = h * 0.05;
-  const x =
-    position === 'top-right'
-      ? w - w * 0.065 - width
-      : position === 'top-centre'
-        ? (w - width) / 2
-        : w * 0.065;
+function signature(c, w, h, logo, lightPaper, position = 'top-left', size = undefined) {
+  const { x, y, width, height } = logoRect(
+    w,
+    h,
+    logo.naturalWidth / logo.naturalHeight,
+    position,
+    logoScaleFor(size),
+  );
   c.save();
   c.imageSmoothingEnabled = true;
   c.imageSmoothingQuality = 'high';
@@ -298,13 +303,16 @@ export async function paintPoster(canvas, design, { small = false, shouldDraw = 
   }
   const b = paintArt(c, H, m, pal, im, art, adj);
   c.restore();
+  const signaturePosition = design.logoPosition || 'top-left';
+  if (signaturePosition.startsWith('bottom'))
+    b.bottom = Math.min(b.bottom, H - 150 - (logoScaleFor(design.logoSize) - 1) * 80);
   c.save();
   c.scale(w / 1000, w / 1000);
   c.translate(clamp(adj.textX, -36, 36), clamp(adj.textY, -36, 36));
   copy(c, design, m, pal, b, H, font);
   c.restore();
   if (adj.guides) guides(c, w, h, pal.colors[1]);
-  signature(c, w, h, logo, pal.light, design.logoPosition);
+  signature(c, w, h, logo, pal.light, signaturePosition, design.logoSize);
   return canvas;
 }
 

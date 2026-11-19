@@ -879,6 +879,37 @@ svg {
   color: #766340;
   background: #f2eddf;
 }
+.signature-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 18px 14px;
+  border-top: 1px solid #f0ece5;
+  background: #fbfaf7;
+}
+.signature-controls .compact-field {
+  gap: 5px;
+}
+.signature-controls .field-label {
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.signature-controls .field-label em {
+  float: right;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: #8c6a42;
+}
+.signature-controls input[type='range'] {
+  width: 100%;
+}
+@media (max-width: 620px) {
+  .signature-controls {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
 .style-section {
   margin-top: 24px;
 }

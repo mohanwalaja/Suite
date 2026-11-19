@@ -43,7 +43,7 @@ Service facts are curated from [the service catalogue](https://astrosivam.com/se
 
 **Every poster uses the original, complete ASTRO SIVAM logo.** `public/brand/official-logo.png` contains the gold emblem, original navy lettering and VEDIC ASTROLOGY tagline in a single transparent image. We obtained the original bytes from the website’s public source repository and verified that their Vite asset hash matches the filename on the live About page (`DlKqdIg5`). No request to an external image host is required when designing, exporting or publishing.
 
-The renderer draws the original transparent logo and wordmark directly over the design at their native aspect ratio. There is **no white rectangle or opaque panel**. On dark paper only, a fine gold edge follows the ink contours for legibility. The artwork remains visible around the emblem and between the letters. Fonts and palettes cannot recolor or replace the original. If the asset cannot load, the studio will not produce an unbranded export or send it to Meta. Brand Kit is read-only. Old custom names, uploaded logos, and hidden-signature preferences are not applied.
+The renderer draws the original transparent logo and wordmark directly over the design at their native aspect ratio. **Signature place** and **Signature size** in the Design tab (also in Layers → Brand signature) let you choose one of six safe positions and a 70–115% size; the original PNG is never stretched, cropped or removed, and exports inherit the choice. There is **no white rectangle or opaque panel**. On dark paper only, a fine gold edge follows the ink contours for legibility. The artwork remains visible around the emblem and between the letters. Fonts and palettes cannot recolor or replace the original. If the asset cannot load, the studio will not produce an unbranded export or send it to Meta. Brand Kit is read-only. Old custom names, uploaded logos, and hidden-signature preferences are not applied.
 
 On phones that honor web-app orientation preferences, the home-screen studio opens in portrait. The normal browser layout remains responsive.
 
@@ -100,7 +100,7 @@ The former fifty-model library is now the first half of a **CreativeRegistry** t
 ```sh
 npm test                       # catalogue, 25,350 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
 npx playwright install chromium
-npm run test:browser           # 17 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
+npm run test:browser           # 18 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
 npm run build
 ```
 

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Poster } from './Shared';
 import { fonts, topics } from '../catalogue.js';
-import { EXPORT_FORMATS } from '../../shared/poster-spec.js';
+import { EXPORT_FORMATS, LOGO_POSITIONS, LOGO_SIZE } from '../../shared/poster-spec.js';
 import { ART_DIRECTIONS, BACKGROUNDS, ORNAMENTS } from '../creative/variation.js';
 import { COMPOSITIONS } from '../creative/composition.js';
 import { TYPE_SYSTEMS } from '../creative/typography.js';
@@ -417,10 +417,26 @@ export function LayerPanel({ design, patch, onUndo, onRedo, canUndo, canRedo, on
                 value={design.logoPosition || 'top-left'}
                 onChange={(e) => patch({ logoPosition: e.target.value })}
               >
-                <option value="top-left">Top left (heritage position)</option>
-                <option value="top-centre">Top centre</option>
-                <option value="top-right">Top right</option>
+                {LOGO_POSITIONS.map((position) => (
+                  <option key={position} value={position}>
+                    {position === 'top-left' ? 'Top left (heritage position)' : position.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join(' ')}
+                  </option>
+                ))}
               </select>
+            </label>
+            <label className="field range-field">
+              <span className="field-label">
+                Logo size <em>{Math.round((design.logoSize ?? LOGO_SIZE.default) * 100)}%</em>
+              </span>
+              <input
+                aria-label="Logo size"
+                type="range"
+                min={Math.round(LOGO_SIZE.min * 100)}
+                max={Math.round(LOGO_SIZE.max * 100)}
+                step="2"
+                value={Math.round((design.logoSize ?? LOGO_SIZE.default) * 100)}
+                onChange={(e) => patch({ logoSize: Number(e.target.value) / 100 })}
+              />
             </label>
             <div className="info-note tiny">
               <ShieldCheck size={15} />

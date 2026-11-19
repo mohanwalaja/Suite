@@ -1,4 +1,10 @@
-import { BRAND, PORTRAIT, canvasSize } from '../../shared/poster-spec.js';
+import {
+  BRAND,
+  PORTRAIT,
+  canvasSize,
+  logoRect,
+  logoScaleFor,
+} from '../../shared/poster-spec.js';
 import { fonts } from '../catalogue.js';
 import { modelsFor } from '../art/models.js';
 import { compositionById } from './composition.js';
@@ -29,9 +35,19 @@ export function inspectDesign(design) {
       problems.push(
         issue('overlap', 'The artwork and the text area intersect in this composition.', 'Choose a composition with a protected text panel.'),
       );
-    if (text.top < 200 && text.x < 560)
+    const position = design?.logoPosition || 'top-left';
+    const brandZone =
+      position.endsWith('left')
+        ? [0, 560]
+        : position.endsWith('right')
+          ? [440, 1000]
+          : [300, 700];
+    const brandConflict = position.startsWith('bottom')
+      ? text.bottom > 1080
+      : text.top < 200 && text.x < brandZone[1] && text.x + text.width > brandZone[0];
+    if (brandConflict)
       problems.push(
-        issue('logo-zone', 'The text panel enters the reserved brand zone.', 'Select a composition that keeps the top-left clear.'),
+        issue('logo-zone', 'The text panel enters the reserved brand zone.', 'Select a composition or signature position that keeps clear space.'),
       );
     if (text.x < 50 || text.x + text.width > 950 || text.bottom > 1170)
       problems.push(
@@ -99,15 +115,23 @@ export async function assessRendered(canvas, design, { previousSignatures = [] }
     problems.push(
       issue('similar', 'This poster is visually almost identical to a previously generated poster.', 'Select another composition or art direction.', 'warning'),
     );
-  // The locked logo occupies the reserved top-left zone. A completely uniform region there
-  // means the signature could not be drawn, so exporting would produce unbranded artwork.
+  // The locked logo occupies whichever reserved zone the studio owner chose. A completely
+  // uniform region there means the signature could not be drawn, so exporting would produce
+  // unbranded artwork.
   try {
     const g = canvas.getContext('2d', { willReadFrequently: true });
+    const rect = logoRect(
+      width,
+      height,
+      1220 / 233,
+      design?.logoPosition || 'top-left',
+      design?.logoSize,
+    );
     const sample = g.getImageData(
-      Math.round(width * 0.06),
-      Math.round(height * 0.05),
-      Math.round(width * 0.2),
-      Math.round(height * 0.03),
+      Math.round(rect.x + rect.width * 0.06),
+      Math.round(rect.y + rect.height * 0.12),
+      Math.round(rect.width * 0.7),
+      Math.round(rect.height * 0.5),
     ).data;
     const colours = new Set();
     for (let i = 0; i < sample.length; i += 40) colours.add(`${sample[i]},${sample[i + 1]},${sample[i + 2]}`);
