@@ -235,7 +235,14 @@ test('deity pictures are individually generated raster paintings, not recolored 
     ['Christmas', []],
     ['Father’s Day', []],
   ]) {
-    const pics = picturesFor(topics.find((t) => t.name === n));
+    const topic = topics.find((t) => t.name === n);
+    if (PLATES[topic.id]) {
+      // Plated festivals replaced their older devotional paintings with the new house style.
+      assert.deepEqual(picturesFor(topic), [], n);
+      assert.ok(modelsFor(topic).every((m) => m.plate && !m.painting), n);
+      continue;
+    }
+    const pics = picturesFor(topic);
     assert.deepEqual([...new Set(pics.map((p) => p.figure))].sort(), gs.sort());
     assert.ok(
       pics.every(

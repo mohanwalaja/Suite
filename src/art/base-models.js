@@ -690,6 +690,10 @@ export function modelsFor(topic) {
     for (const m of result) {
       m.setting = plateId;
       m.plate = true;
+      // A replacement plate supersedes the older painting in this collection. The original
+      // deity assets stay in the shared catalogue for the devotional directory.
+      m.painting = false;
+      m.figure = '';
       m.medium = 'Painted scene';
       m.detail = PLATES[plateId];
       m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}`;

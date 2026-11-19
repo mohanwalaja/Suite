@@ -43,6 +43,16 @@ export const PLATES = {
   'fest-kaanum-pongal': 'The Harvest Boat',
   'fest-bhogi': 'The Bhogi Fire',
   'fest-bandi-chhor-divas': 'The Temple Arch',
+  'fest-paryushana': 'The Jain Lamp',
+  'fest-ladakh-festival': 'The Himalayan Flags',
+  'fest-sangai-festival': 'The Sangai Marsh',
+  'fest-chapchar-kut': 'The Mizo Bamboo',
+  'fest-moatsu': 'The Ao Woven Cloth',
+  'fest-karam': 'The Karam Branch',
+  'fest-eid-e-milad': 'The Green Lantern',
+  'fest-diwali': 'The Diwali Lamps',
+  'fest-pongal': 'The Pongal Harvest',
+  'fest-holi': 'The Holi Colours',
 };
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);
