@@ -33,6 +33,16 @@ export const PLATES = {
   'fest-eid-al-adha': 'The Silver Crescent',
   'fest-christmas': 'The Winter Star',
   'fest-easter': 'The Lily Basket',
+  'fest-good-friday': 'The Quiet Cross',
+  'fest-thrissur-pooram': 'The Ceremonial Parasol',
+  'fest-losar': 'The Prayer Flags',
+  'fest-hornbill-festival': 'The Hornbill Feather',
+  'fest-wangala': 'The Garo Drum',
+  'fest-nuakhai': 'The New Rice',
+  'fest-parsi-new-year': 'The Parsi Lamp',
+  'fest-kaanum-pongal': 'The Harvest Boat',
+  'fest-bhogi': 'The Bhogi Fire',
+  'fest-bandi-chhor-divas': 'The Temple Arch',
 };
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);
