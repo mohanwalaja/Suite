@@ -1,5 +1,6 @@
 import { DEITIES, paintings, paintingsOf } from './deities.js';
 import { occasionBrief } from './briefs.js';
+import { PLATES, plateFor } from './plates.js';
 // Model IDs remain stable for saved posters. Each row is an illustration brief, not a tint.
 // title | focal illustration (or @photograph) | composition | supporting element | optional setting
 const rows = (text) =>
@@ -456,6 +457,7 @@ const motifName = (id) =>
     .join(' ');
 const paintedNames = {
   ...Object.fromEntries(Object.entries(paintings).map(([k, v]) => [k, v[0]])),
+  ...Object.fromEntries(Object.entries(PLATES)),
   'mothers-day-garden': 'Jasmine in Her Hair',
   'fathers-day-kite': 'Learning to Fly',
   'teachers-day-classroom': 'A Moment of Discovery',
@@ -514,6 +516,9 @@ function occasionRows(topic) {
         ),
       ];
   const devotionalPhotos = photos.filter((p) => Object.hasOwn(paintings, p));
+  // Subjects with no historical or devotional picture receive one original, individually
+  // painted plate. It is a real rendered artwork, not a placeholder or a renamed duplicate.
+  const plate = photos.length || devotionalPhotos.length ? null : plateFor(topic);
   for (const [i, photo] of photos.entries()) {
     const layout =
       paintings[photo]?.[3] === 'whole' ? 'folio' : ['cover', 'gallery', 'arch'][i % 3];
@@ -528,7 +533,7 @@ function occasionRows(topic) {
       a = motifs[k],
       b = motifs[(k + 1 + n) % 8];
     const scene = ['Portrait', 'Duet', 'Garland', 'Vignette', 'Keepsake', 'Study', 'Emblem'][n];
-    const picture = devotionalPhotos.length ? devotionalPhotos[i % devotionalPhotos.length] : null;
+    const picture = devotionalPhotos.length ? devotionalPhotos[i % devotionalPhotos.length] : plate;
     add(`${motifName(a)} ${scene}`, a, layouts[(k * 3 + n * 2 + index) % 10], b, picture, n);
   }
   return out;
@@ -615,6 +620,7 @@ export function modelsFor(topic) {
         ? 'devotional'
         : 'occasion';
   const brief = topic.category === 'Services' ? null : occasionBrief(topic);
+  const plateId = plateFor(topic);
   const seq =
     themes[family] ||
     (family === 'porutham'
@@ -662,6 +668,7 @@ export function modelsFor(topic) {
       hero: hero.startsWith('@') ? null : hero,
       companion,
       painting: !!painting,
+      plate: !!photo && !painting && photo === plateId,
       layout,
       setting: photo,
       medium,
@@ -676,6 +683,17 @@ export function modelsFor(topic) {
       key: `${key}:${id}:${hero}:${companion}:${layout}:${photo || ''}`,
     };
   });
+  // Service studies originally used photographic still lifes. When a subject has its own
+  // painted plate, every study uses that locally bundled artwork; the plate is a real
+  // original asset, not a recolour or a renamed copy of the former photograph.
+  if (plateId)
+    for (const m of result) {
+      m.setting = plateId;
+      m.plate = true;
+      m.medium = 'Painted scene';
+      m.detail = PLATES[plateId];
+      m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}`;
+    }
   if (cache.size >= 48) cache.delete(cache.keys().next().value);
   cache.set(key, result);
   return result;

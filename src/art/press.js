@@ -76,11 +76,36 @@ function paper(c, h, base) {
   }
   rect(c, 0, 0, 1000, h, c.createPattern(fibre, 'repeat'));
 }
-function cover(c, im, x, y, w, h, anchor = 0.5) {
+function cover(c, im, x, y, w, h, anchor = 0.5, vanchor = 0.48) {
   const iw = im.naturalWidth,
     ih = im.naturalHeight,
     s = Math.max(w / iw, h / ih);
-  c.drawImage(im, (iw - w / s) * anchor, (ih - h / s) * 0.48, w / s, h / s, x, y, w, h);
+  c.drawImage(im, (iw - w / s) * anchor, (ih - h / s) * vanchor, w / s, h / s, x, y, w, h);
+}
+// A painted plate has no face, logo or lettering to protect, so each authored design frames
+// a genuinely different region of the painting. The crop is a large change of view, paired
+// with a different motif pair and composition -- not a recolour of one fixed crop.
+function cropPlate(c, im, x, y, w, h, m) {
+  const aspect = w / h;
+  let sw = 0.62 + ((m.id * 13) % 3) * 0.08;
+  let sh = sw / aspect;
+  if (sh > 0.92) {
+    sh = 0.92;
+    sw = sh * aspect;
+  }
+  const sx = (((m.id * 29) % 100) / 100) * (1 - sw);
+  const sy = (((m.id * 41) % 100) / 100) * (1 - sh);
+  c.drawImage(
+    im,
+    sx * im.naturalWidth,
+    sy * im.naturalHeight,
+    sw * im.naturalWidth,
+    sh * im.naturalHeight,
+    x,
+    y,
+    w,
+    h,
+  );
 }
 function contain(c, im, x, y, w, h) {
   const scale = Math.min(w / im.naturalWidth, h / im.naturalHeight),
@@ -226,7 +251,8 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}) {
   const stacked = m.layout === 'window' || m.layout === 'ledger' || m.layout === 'stationery';
   const bleed = im && (m.layout === 'cover' || m.hero || m.setting === 'birth-astrologer');
   if (bleed) {
-    cover(c, im, 0, 0, 1000, h, 0.88);
+    if (m.plate) cropPlate(c, im, 0, 0, 1000, h, m);
+    else cover(c, im, 0, 0, 1000, h, 0.88);
     const g = c.createLinearGradient(0, 0, 825, 0);
     g.addColorStop(0, rgba(base, 0.98));
     g.addColorStop(0.37, rgba(base, 0.93));
@@ -576,8 +602,19 @@ function creativePlate(c, h, m, palette, im, art, adjust = {}) {
   const matte = mix(base, foil, 0.1);
   frameArt(c, area, () => {
     rect(c, area.x - 10, area.y - 10, area.w + 20, area.h + 20, matte);
-    if (im) contain(c, im, area.x + 4, area.y + 4, area.w - 8, area.h - 8);
-    else if (art) contain(c, art, area.x + 7, area.y + 7, area.w - 14, area.h - 14);
+    if (im) {
+      if (m.plate) cropPlate(c, im, area.x + 4, area.y + 4, area.w - 8, area.h - 8, m);
+      else contain(c, im, area.x + 4, area.y + 4, area.w - 8, area.h - 8);
+      // A painted plate is the ground, not a replacement for the subject's own drawn
+      // vocabulary. The line work is laid over it so each pass remains a distinct scene.
+      // Sacred paintings and personal photographs are never overprinted this way.
+      if (art && m.plate) {
+        c.save();
+        c.globalAlpha = 0.72;
+        contain(c, art, area.x + 7, area.y + 7, area.w - 14, area.h - 14);
+        c.restore();
+      }
+    } else if (art) contain(c, art, area.x + 7, area.y + 7, area.w - 14, area.h - 14);
     else {
       for (let i = 1; i < 5; i++)
         rule(c, area.x + 12, area.y + (area.h * i) / 5, area.x + area.w - 12, area.y + (area.h * i) / 5, rgba(foil, 0.25), 1);

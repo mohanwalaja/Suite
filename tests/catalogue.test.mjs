@@ -20,6 +20,7 @@ import { imageSize } from 'image-size';
 import { sceneSvg } from '../src/art/illustration.js';
 import { DEITIES, deityTopics, paintings, paintingsOf, customDeity } from '../src/art/deities.js';
 import { occasionBrief } from '../src/art/briefs.js';
+import { PLATES } from '../src/art/plates.js';
 const digest = (x) => createHash('sha256').update(x).digest('hex');
 test('every subject has 100+ independently authored compositions, not recolours', () => {
   // The original palette and type libraries remain available and unchanged.
@@ -42,6 +43,8 @@ test('every subject has 100+ independently authored compositions, not recolours'
         if (!photoHashes.has(m.setting))
           photoHashes.set(m.setting, digest(readFileSync(`public/art/scenes/${m.setting}.jpg`)));
         art += photoHashes.get(m.setting);
+        // Each plated study frames its own large crop region of the source painting.
+        if (m.plate) art += `:crop-${m.id}`;
       }
       if (m.hero || m.companion) {
         const svg = sceneSvg(m);
@@ -250,4 +253,31 @@ test('deity pictures are individually generated raster paintings, not recolored 
     ['local-a', 'local-b'],
   );
   assert.ok(modelsFor(local).every((m) => m.local && !m.setting && !m.hero));
+});
+
+test('original painted plates are distinct assets wired into their own subjects', () => {
+  const hashes = new Set();
+  for (const [id, title] of Object.entries(PLATES)) {
+    assert.ok(title.length > 5);
+    const jpg = readFileSync(`public/art/scenes/${id}.jpg`);
+    const webp = readFileSync(`public/art/thumbs/${id}.webp`);
+    const hash = digest(jpg);
+    assert.ok(!hashes.has(hash), `${title} cannot reuse another plate file`);
+    hashes.add(hash);
+    assert.ok(jpg.length > 20000, `${title} source artwork is missing`);
+    assert.ok(webp.length > 5000, `${title} thumbnail is missing`);
+    const size = imageSize(jpg);
+    assert.equal(size.width, 1024, title);
+    assert.equal(size.height, 1024, title);
+    const topic = topics.find((t) => t.id === id);
+    assert.ok(topic, `${title} has no matching subject`);
+    const models = modelsFor(topic);
+    assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT);
+    for (const m of models) {
+      assert.equal(m.setting, id, `${topic.name} did not load its painted plate`);
+      assert.equal(m.plate, true);
+      assert.equal(m.medium, 'Painted scene');
+    }
+  }
+  assert.ok(hashes.size >= 10);
 });

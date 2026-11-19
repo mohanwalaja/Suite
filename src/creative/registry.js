@@ -85,7 +85,7 @@ export class CreativeRegistry {
           }
         : ARRANGEMENTS[variation.arrangementId] || arrangementById(variation.arrangementId);
     const [hero, companion] =
-      pass > 0 && !base.local && !base.setting
+      pass > 0 && !base.local && (!base.setting || base.plate)
         ? motifPairFor(pool, base.id, pass)
         : [base.hero || null, base.companion || null];
     // Sacred pictures and personal photographs are never swapped for another subject's art.
@@ -109,7 +109,9 @@ export class CreativeRegistry {
       illustration: base.local
         ? 'The selected personal picture, shown uncropped with its own clear space.'
         : setting
-          ? `${base.name}: registered ${base.medium.toLowerCase()} with subject-specific attributes.`
+          ? base.plate
+            ? `${base.detail}: original painted plate with subject-specific line work.`
+            : `${base.name}: registered ${base.medium.toLowerCase()} with subject-specific attributes.`
           : `${titleCase(hero || 'motif')} with a ${titleCase(companion || 'supporting')} vignette.`,
       secondaryElements: titleCase(companion || ornament.name),
       typography: `${typeSystem.name}: ${typeSystem.note}`,
