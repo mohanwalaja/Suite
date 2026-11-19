@@ -115,7 +115,7 @@ test('phone directory, Hindi and alias search, change the actual picture and exp
   await button(page, 'Models').click();
   dialog = page.getByRole('dialog');
   const models = dialog.getByRole('button', { name: /^Apply .* model$/ });
-  await expect(models).toHaveCount(50);
+  await expect(models).toHaveCount(100);
   await models.last().scrollIntoViewIfNeeded();
   await expect(models.last().locator('canvas')).toHaveAttribute('data-rendered', 'true');
   await models.last().click();

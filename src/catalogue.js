@@ -350,7 +350,7 @@ export function withPicture(d, topic, model) {
       ? {}
       : { topic, headline: undefined, tagline: undefined, ...createCopy(topic) }),
     styleId: model.id,
-    font: d.font === fonts[d.styleId] ? fonts[model.id] : d.font,
+    font: d.font === fonts[d.styleId % fonts.length] ? fonts[model.id % fonts.length] : d.font,
   };
 }
 export function newDesign(topic = services[0]) {

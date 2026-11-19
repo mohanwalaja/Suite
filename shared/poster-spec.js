@@ -20,6 +20,17 @@ export const PORTRAIT = Object.freeze({
   ratio: '4:5',
 });
 export const formats = Object.freeze([PORTRAIT]);
+// Editorial drafts and publishing stay portrait. Exports can additionally be framed for
+// square and story placements without cropping or moving the composed artwork.
+export const EXPORT_FORMATS = Object.freeze([
+  { ...PORTRAIT, id: 'portrait', name: 'Instagram / Facebook portrait', platforms: 'Instagram · Facebook' },
+  { id: 'square', name: 'Instagram / Facebook square', width: 1080, height: 1080, ratio: '1:1', platforms: 'Instagram · Facebook' },
+  { id: 'story', name: 'Instagram story', width: 1080, height: 1920, ratio: '9:16', platforms: 'Instagram' },
+]);
+export const exportSizeFor = (id) => {
+  const found = EXPORT_FORMATS.find((f) => f.id === id) || PORTRAIT;
+  return { width: found.width, height: found.height };
+};
 // Keep the resolver for old saved designs and callers; no legacy ID can select another size.
 export const formatFor = () => PORTRAIT;
 

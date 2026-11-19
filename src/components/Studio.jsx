@@ -27,6 +27,7 @@ import {
   LoaderCircle,
 } from 'lucide-react';
 import { Poster, Modal, ModelCard, categoryIcons } from './Shared';
+import { LayerPanel } from './Creative.jsx';
 import { modelsFor, modelFor, collectionInfo, picturesFor } from '../art/models.js';
 import {
   categories,
@@ -126,19 +127,24 @@ export function TopicPicker({ design, customTopics, onPick, onCustom, onClose })
 export function StyleGallery({ design, onStyle, onClose }) {
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState('All models');
+  const [directionFilter, setDirectionFilter] = useState('All directions');
   const models = modelsFor(design.topic),
     info = collectionInfo(design.topic);
   const filters = ['All models', ...new Set(models.map((m) => m.medium))];
+  const directions = ['All directions', ...new Set(models.map((m) => m.directionId || 'editorial'))];
   const list = models.filter(
     (m) =>
       (filter === 'All models' || m.medium === filter) &&
+      (directionFilter === 'All directions' || m.directionId === directionFilter) &&
       [
         m.name,
         m.detail,
         m.composition,
         m.figure,
         m.companion,
-        fonts[m.id],
+        fonts[m.id % fonts.length],
+        m.definition?.concept || '',
+        m.definition?.artDirection || '',
         String(m.id + 1).padStart(2, '0'),
       ]
         .join(' ')
@@ -148,11 +154,17 @@ export function StyleGallery({ design, onStyle, onClose }) {
   return (
     <Modal
       title={info.name}
-      eyebrow={`${design.topic.name.toUpperCase()} · 50 POSTER MODELS`}
+      eyebrow={`${design.topic.name.toUpperCase()} · ${models.length} POSTER DESIGNS`}
       onClose={onClose}
       wide
     >
       <div className="gallery-tools">
+        <label className="field direction-filter">
+          <span className="field-label">Art direction</span>
+          <select value={directionFilter} onChange={(e) => setDirectionFilter(e.target.value)}>
+            {directions.map((d) => <option key={d}>{d}</option>)}
+          </select>
+        </label>
         <label className="search-box">
           <Search size={17} />
           <input
@@ -304,26 +316,7 @@ export function CopyEditor({ design, patch, notify }) {
             onChange={(e) => patch({ headline: e.target.value })}
           />
         </label>
-        {design.topic.hindi && (
-          <button
-            className="text-btn"
-            type="button"
-            onClick={() =>
-              patch({
-                headline:
-                  design.headline === design.topic.hindi ? design.topic.name : design.topic.hindi,
-              })
-            }
-          >
-            {design.headline === design.topic.hindi ? (
-              'Use English name'
-            ) : (
-              <>
-                Use Hindi name · <span lang="hi">{design.topic.hindi}</span>
-              </>
-            )}
-          </button>
-        )}
+        <p className="subtle english-note">All poster wording is in English. Hindi names remain searchable in the deity directory.</p>
         <label className="field">
           <span className="field-label">Poster tagline</span>
           <input
@@ -343,6 +336,13 @@ export function CopyEditor({ design, patch, notify }) {
 export function Studio({
   design,
   patch,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  onDuplicate,
+  onQuality,
+  quality,
   onCategory,
   onStyle,
   onPickTopic,
@@ -442,6 +442,7 @@ export function Studio({
               {[
                 { n: 'Design', i: Palette },
                 { n: 'Caption & tags', i: LetterText },
+                { n: 'Layers', i: Layers3 },
               ].map(({ n, i: Icon }) => (
                 <button
                   role="tab"
@@ -505,10 +506,10 @@ export function Studio({
                 <button className="model-picker" onClick={onGallery}>
                   <Layers3 size={17} />
                   <span>
-                    <small>Poster model · {String(st.id + 1).padStart(2, '0')} of 50</small>
+                    <small>Poster model · {String(st.id + 1).padStart(2, '0')} of {models.length}</small>
                     <strong>{st.name}</strong>
                   </span>
-                  <span className="model-browse-label">Browse 50</span>
+                  <span className="model-browse-label">Browse {models.length}</span>
                   <ChevronRight size={15} />
                 </button>
                 <div className="controls-divider" />
@@ -568,6 +569,18 @@ export function Studio({
                   </div>
                 </div>
               </div>
+            ) : tab === 'Layers' ? (
+              <LayerPanel
+                design={design}
+                patch={patch}
+                onUndo={onUndo}
+                onRedo={onRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                onDuplicate={onDuplicate}
+                onQuality={onQuality}
+                quality={quality}
+              />
             ) : (
               <div role="tabpanel">
                 <CopyEditor design={design} patch={patch} notify={notify} />
@@ -594,7 +607,7 @@ export function Studio({
             <div>
               <div className="title-inline">
                 <h2>{info.name}</h2>
-                <span className="count-pill">50 models</span>
+                <span className="count-pill">{models.length} designs</span>
               </div>
               <p>{info.description}</p>
             </div>
@@ -615,7 +628,7 @@ export function Studio({
           ))}
         </div>
         <div className="model-rail-foot">
-          <span>Scroll through all 50 models</span>
+          <span>Scroll through all {models.length} designs</span>
           <button className="icon-btn" aria-label="Scroll models back" onClick={() => turnRail(-1)}>
             <ChevronLeft size={16} />
           </button>

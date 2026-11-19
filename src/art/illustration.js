@@ -3,7 +3,8 @@ import { story } from './stories.js';
 import { emblem } from './emblems.js';
 import { craft } from './atelier.js';
 import { occasionArt } from './occasions.js';
-import { defs, place, G, R, C, L, P, use, rep, ring, gold, paper, ground, brass } from './svg.js';
+import { defs, place, G, R, C, E, L, P, use, rep, ring, star, gold, paper, ground, brass } from './svg.js';
+import { arrangementById, ARRANGEMENTS } from '../creative/artwork.js';
 export function motif(id) {
   const [key, arg] = id.split(':');
   const content =
@@ -96,12 +97,40 @@ function spread(m) {
     return ring('leaf', 151, 129, 109, 27, 18) + place(a, 50, 25, 205) + place(b, 298, 24, 220);
   return place(a, 39, -2, 258) + place(b, 322, 24, 205);
 }
+// Direction II scenes are built from a different spatial grammar: the hero and companion
+// change scale, rotation and relative position, and the supporting geometry is redrawn.
+// Together with the composition engine this makes them a new illustration, not a recolour.
+function creativeScene(m) {
+  const arr = arrangementById(m.arrangement) || ARRANGEMENTS[0];
+  const [hx, hy, hw, hh = hw] = arr.hero;
+  const [cx, cy, cw, ch = cw] = arr.companion;
+  const decor = {
+    rule: () => L(16, 228, 240, 228, gold, 1.2) + rep(24, (i) => L(20 + i * 9, 228, 20 + i * 9, i % 4 ? 232 : 238, gold, 0.9)),
+    ring: () => C(128, 128, 112, 'none', gold, 1) + C(128, 128, 104, 'none', gold, 0.5),
+    arch: () => P('M20 228V118a108 108 0 0 1 216 0v110', 'none', gold, 1.2),
+    grid: () => rep(7, (i) => L(16 + i * 37, 22, 16 + i * 37, 234, gold, 0.6)) + rep(6, (i) => L(16, 34 + i * 36, 240, 34 + i * 36, gold, 0.6)),
+    frame: () => R(9, 9, 238, 238, 'none', gold, 1.3, 4) + R(16, 16, 224, 224, 'none', gold, 0.6, 2),
+    orbit: () => C(128, 128, 108, 'none', gold, 0.9) + rep(12, (i) => star(128 + 106 * Math.cos((i * Math.PI) / 6), 128 + 106 * Math.sin((i * Math.PI) / 6), 3.4, gold)),
+    ticks: () => L(10, 240, 246, 240, gold, 1) + rep(20, (i) => L(14 + i * 11.5, 240, 14 + i * 11.5, i % 5 ? 234 : 227, gold, 0.8)),
+    columns: () => L(6, 12, 6, 244, gold, 1.1) + L(250, 12, 250, 244, gold, 1.1) + L(13, 228, 243, 228, gold, 0.7),
+    medal: () => C(128, 128, 118, 'none', gold, 1.4) + C(128, 128, 110, 'none', gold, 0.5) + E(128, 128, 93, 40, 'none', gold, 0.6),
+    stack: () => R(15, 19, 226, 226, 'none', gold, 0.9, 3) + R(26, 8, 226, 226, 'none', gold, 0.55, 3),
+  }[arr.decor];
+  let out = (decor ? decor() : '') + C(128, 232, 82, 'url(#shadow)');
+  if (m.hero) out += place(motif(m.hero), hx, hy, hw, hh);
+  if (m.companion) out += place(motif(m.companion), cx, cy, cw, ch);
+  if (!m.hero && m.companion) out += use('jasmine', 18, 22, 20);
+  return svg(out);
+}
+
 export const sceneSvg = (m) =>
-  !m.hero
-    ? svg(motif(m.companion))
-    : panoramas.has(m.layout)
-      ? svg(spread(m), 560)
-      : svg(compose(m));
+  m.direction === 1
+    ? creativeScene(m)
+    : !m.hero
+      ? svg(motif(m.companion))
+      : panoramas.has(m.layout)
+        ? svg(spread(m), 560)
+        : svg(compose(m));
 const cache = new Map();
 export function illustrationImage(m) {
   const key = m.key;

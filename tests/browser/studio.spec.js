@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.canvas-mat canvas')).toHaveAttribute('width', '1080');
 });
 
-test('50 real designs, selectable fonts, palettes, and correctly sized PNG exports', async ({
+test('100 original designs, selectable fonts, palettes, and correctly sized PNG exports', async ({
   page,
 }) => {
   const card = page.locator('.style-strip .style-art').first();
@@ -17,7 +17,7 @@ test('50 real designs, selectable fonts, palettes, and correctly sized PNG expor
   await page.getByRole('button', { name: 'Browse all' }).click();
   await expect(
     page.getByRole('dialog').getByRole('button', { name: /Apply .* model/ }),
-  ).toHaveCount(50);
+  ).toHaveCount(100);
   await page.getByRole('textbox', { name: 'Search models' }).fill('The Chart Cabinet');
   await page
     .getByRole('dialog')
@@ -84,7 +84,7 @@ test('festivals and unlimited custom occasions inherit the style collection', as
   await page.getByRole('button', { name: 'Browse all' }).click();
   await expect(
     page.getByRole('dialog').getByRole('button', { name: /Apply .* model/ }),
-  ).toHaveCount(50);
+  ).toHaveCount(100);
 });
 
 test('phone-only workflow: select a day, edit, review, and find real connection setup', async ({

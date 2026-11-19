@@ -1,3 +1,5 @@
+import { compositionById } from '../creative/composition.js';
+
 // Layouts in a 1000-unit print space. Artwork and type are given separate live areas;
 // changing a palette changes the paper and the ink, never the colours of a deity or logo.
 export const mix = (a, b, t) =>
@@ -195,12 +197,13 @@ function paintingPlate(c, h, m, colors, im, ornament) {
   const left = ['gallery', 'column', 'cameo', 'canopy'].includes(m.layout);
   return side(left, ['gallery', 'seal'].includes(m.layout) ? 517 : 545);
 }
-export function paintArt(c, h, m, palette, im, art) {
+export function paintArt(c, h, m, palette, im, art, adjust = {}) {
   const [base, foil, ink] = palette.colors;
   const tint = mix(base, ink, 0.07),
     mid = mix(base, foil, 0.15),
     line = rgba(foil, 0.68);
   paper(c, h, base);
+  if (m.direction === 1) return creativePlate(c, h, m, palette, im, art, adjust);
   // A supplied portrait can have any ratio. Never crop its face or place marketing text over it.
   if (m.local) {
     trim(c, h, foil, false);
@@ -379,4 +382,218 @@ export function paintArt(c, h, m, palette, im, art) {
     ticks(c, x - 5, cy + w / 2 + 18, w + 10, line);
   }
   return box(65, h * 0.266, 418, h * 0.829, 135);
+}
+
+// ---------------------------------------------------------------------------
+// Direction II: the CompositionEngine renderer. Each archetype places artwork and copy
+// differently; backgrounds and decorative programmes are independent authored systems.
+// All coordinates stay in the 1000-unit print space and keep the brand zone clear.
+function creativeBackground(c, h, m, [base, foil]) {
+  const faint = rgba(foil, 0.1),
+    softer = rgba(foil, 0.055);
+  switch (m.background) {
+    case 'grid':
+      for (let x = 50; x < 1000; x += 50) rule(c, x, 40, x, h - 40, softer, 0.8);
+      for (let y = 100; y < h - 60; y += 50) rule(c, 40, y, 960, y, softer, 0.8);
+      break;
+    case 'halftone':
+      for (let y = 210; y < h - 170; y += 17)
+        for (let x = 55; x < 950; x += 17) {
+          const d = Math.abs(x - 500) / 500;
+          if (d > 0.55) disc(c, x, y, 1 + d * 1.5, rgba(foil, 0.06 + d * 0.08));
+        }
+      break;
+    case 'stripe':
+      for (let i = 0; i < 7; i++)
+        rect(c, (i * 1000) / 7, 0, 1000 / 14, h, rgba(foil, i % 2 ? 0.035 : 0.06));
+      break;
+    case 'vignette': {
+      const g = c.createRadialGradient(500, h * 0.42, h * 0.13, 500, h * 0.42, h * 0.78);
+      g.addColorStop(0, rgba(base, 0));
+      g.addColorStop(1, rgba('#1b1b22', 0.16));
+      rect(c, 0, 0, 1000, h, g);
+      break;
+    }
+    case 'blueprint':
+      for (let x = 60; x < 960; x += 80) rule(c, x, 60, x, h - 60, softer, 1);
+      for (let y = 120; y < h - 100; y += 80) rule(c, 60, y, 940, y, softer, 1);
+      for (const [x, y] of [[80, h - 90], [920, h - 90], [80, 190], [920, 190]]) {
+        rule(c, x - 8, y, x + 8, y, faint, 1);
+        rule(c, x, y - 8, x, y + 8, faint, 1);
+      }
+      break;
+    case 'spotlight': {
+      const g = c.createRadialGradient(500, h * 0.36, 20, 500, h * 0.36, h * 0.48);
+      g.addColorStop(0, rgba('#fff2c9', 0.13));
+      g.addColorStop(1, rgba(base, 0));
+      rect(c, 0, 0, 1000, h, g);
+      break;
+    }
+    case 'diagonal':
+      c.save();
+      c.translate(500, h * 0.5);
+      c.rotate(-0.34);
+      for (let i = -4; i < 5; i++) rect(c, i * 200 - 30, -h, 50, h * 2, rgba(foil, 0.035));
+      c.restore();
+      break;
+    case 'frame':
+      stroke(c, 31, 31, 938, h - 62, faint, 1.2);
+      stroke(c, 43, 43, 914, h - 86, softer, 0.9);
+      break;
+    default:
+      break;
+  }
+}
+
+function creativeOrnament(c, h, m, [base, foil], area) {
+  const ink = rgba(foil, 0.62),
+    soft = rgba(foil, 0.3);
+  const { x, y, w, hh } = area;
+  switch (m.ornament) {
+    case 'kolam':
+      for (let i = 0; i <= 20; i++) {
+        const px = x + (w * i) / 20;
+        lozenge(c, px, y - 9, 4.5, i % 2 ? ink : soft);
+        lozenge(c, px, y + hh + 9, 4.5, i % 2 ? soft : ink);
+      }
+      break;
+    case 'swiss':
+      for (const [px, py] of [[x, y], [x + w, y], [x, y + hh], [x + w, y + hh]]) {
+        rule(c, px - 9, py, px + 9, py, ink, 1);
+        rule(c, px, py - 9, px, py + 9, ink, 1);
+      }
+      break;
+    case 'botanical':
+      for (const side of [-1, 1]) {
+        c.save();
+        c.translate(side < 0 ? x - 12 : x + w + 12, y + hh * 0.5);
+        c.scale(side, 1);
+        for (let i = 0; i < 6; i++) {
+          c.beginPath();
+          c.moveTo(0, i * 15 - 45);
+          c.quadraticCurveTo(19, i * 15 - 53, 22, i * 15 - 35);
+          c.strokeStyle = soft;
+          c.lineWidth = 1.1;
+          c.stroke();
+        }
+        c.restore();
+      }
+      break;
+    case 'stars':
+      for (let i = 0; i < 24; i++) {
+        const px = x + ((i * 97) % Math.round(w)),
+          py = y - 14 + ((i * 43) % Math.round(hh + 28));
+        lozenge(c, px, py, i % 5 === 0 ? 4 : 2, i % 3 ? soft : ink);
+      }
+      break;
+    case 'arch':
+      arch(c, x - 13, y - 16, w + 26, hh + 30);
+      c.strokeStyle = ink;
+      c.lineWidth = 1.4;
+      c.stroke();
+      break;
+    case 'rangoli':
+      for (let r = 30; r <= 120; r += 30) {
+        c.beginPath();
+        c.arc(x + w / 2, y + hh / 2, r, 0, Math.PI * 2);
+        c.strokeStyle = soft;
+        c.lineWidth = 1;
+        c.stroke();
+      }
+      for (let i = 0; i < 24; i++) {
+        const a = (i * Math.PI) / 12;
+        rule(
+          c,
+          x + w / 2 + Math.cos(a) * 126,
+          y + hh / 2 + Math.sin(a) * 126,
+          x + w / 2 + Math.cos(a) * 137,
+          y + hh / 2 + Math.sin(a) * 137,
+          ink,
+          1,
+        );
+      }
+      break;
+    case 'brackets':
+      for (const [px, py, sx, sy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + hh, 1, -1], [x + w, y + hh, -1, -1]]) {
+        rule(c, px, py, px + sx * 30, py, ink, 2);
+        rule(c, px, py, px, py + sy * 30, ink, 2);
+      }
+      break;
+    case 'rules':
+      rule(c, x, y - 15, x + w, y - 15, ink, 1.4);
+      rule(c, x, y + hh + 15, x + w, y + hh + 15, ink, 1.4);
+      rule(c, x + w * 0.25, y - 22, x + w * 0.75, y - 22, soft, 0.8);
+      break;
+    case 'layers':
+      stroke(c, x - 12, y - 12, w + 24, hh + 24, soft, 1);
+      stroke(c, x - 22, y - 22, w + 44, hh + 44, rgba(foil, 0.18), 1);
+      break;
+    default:
+      break;
+  }
+  if (m.background === 'plain') rect(c, x + w - 42, y + hh + 22, 42, 3, mix(foil, base, 0.2));
+}
+
+function frameArt(c, area, draw) {
+  const { x, y, w, hh, shape, rotate = 0 } = area;
+  c.save();
+  if (rotate) {
+    c.translate(x + w / 2, y + hh / 2);
+    c.rotate(rotate);
+    c.translate(-(x + w / 2), -(y + hh / 2));
+  }
+  if (shape === 'circle' || shape === 'arch') {
+    c.beginPath();
+    if (shape === 'circle') c.arc(x + w / 2, y + hh / 2, Math.min(w, hh) / 2, 0, Math.PI * 2);
+    else arch(c, x, y, w, hh);
+    c.clip();
+  }
+  draw();
+  c.restore();
+  if (shape === 'circle') {
+    c.beginPath();
+    c.arc(x + w / 2, y + hh / 2, Math.min(w, hh) / 2 + 5, 0, Math.PI * 2);
+    c.strokeStyle = rgba('#c9a35e', 0.75);
+    c.lineWidth = 1.5;
+    c.stroke();
+  } else if (shape === 'arch') {
+    arch(c, x - 5, y - 5, w + 10, hh + 10);
+    c.strokeStyle = rgba('#c9a35e', 0.7);
+    c.lineWidth = 1.4;
+    c.stroke();
+  } else {
+    stroke(c, x - 6, y - 6, w + 12, hh + 12, rgba('#c9a35e', 0.58), 1.2);
+  }
+}
+
+function creativePlate(c, h, m, palette, im, art, adjust = {}) {
+  const [base, foil] = palette.colors;
+  const comp = compositionById(m.compositionId);
+  const { art: area, text, inset } = comp.geometry(h);
+  if (adjust.shape && adjust.shape !== 'auto') area.shape = adjust.shape;
+  creativeBackground(c, h, m, palette.colors);
+  creativeOrnament(c, h, m, palette.colors, { x: area.x, y: area.y, w: area.w, hh: area.h });
+  const matte = mix(base, foil, 0.1);
+  frameArt(c, area, () => {
+    rect(c, area.x - 10, area.y - 10, area.w + 20, area.h + 20, matte);
+    if (im) contain(c, im, area.x + 4, area.y + 4, area.w - 8, area.h - 8);
+    else if (art) contain(c, art, area.x + 7, area.y + 7, area.w - 14, area.h - 14);
+    else {
+      for (let i = 1; i < 5; i++)
+        rule(c, area.x + 12, area.y + (area.h * i) / 5, area.x + area.w - 12, area.y + (area.h * i) / 5, rgba(foil, 0.25), 1);
+    }
+  });
+  if (inset && art) {
+    rect(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, matte);
+    stroke(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, rgba(foil, 0.5), 1);
+    contain(c, art, inset.x, inset.y, inset.w, inset.h);
+  }
+  if (inset && !art && im) {
+    // A companion drawn from the subject's own vocabulary keeps the diptych meaningful.
+    ticks(c, inset.x, inset.y + inset.h - 10, inset.w, rgba(foil, 0.5));
+    for (let i = 0; i < 5; i++) lozenge(c, inset.x + (inset.w * (i + 0.5)) / 5, inset.y + inset.h * 0.45, 5, foil);
+  }
+  if (m.compositionId === 'blueprint') ticks(c, area.x - 4, area.y + area.h + 14, area.w + 8, rgba(foil, 0.55));
+  if (m.compositionId === 'archive') rule(c, 80, h - 122, 920, h - 122, rgba(foil, 0.4), 1);
+  return text;
 }

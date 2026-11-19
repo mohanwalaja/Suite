@@ -14,12 +14,15 @@ import {
   matchesTopic,
 } from '../src/catalogue.js';
 import { modelsFor, picturesFor } from '../src/art/models.js';
+import { structuralSignature, assertStructurallyUnique } from '../src/creative/uniqueness.js';
+import { MIN_DESIGNS_PER_SUBJECT } from '../src/creative/registry.js';
 import { imageSize } from 'image-size';
 import { sceneSvg } from '../src/art/illustration.js';
 import { DEITIES, deityTopics, paintings, paintingsOf, customDeity } from '../src/art/deities.js';
 import { occasionBrief } from '../src/art/briefs.js';
 const digest = (x) => createHash('sha256').update(x).digest('hex');
-test('every subject has 50 unique style, palette, and font combinations', () => {
+test('every subject has 100+ independently authored compositions, not recolours', () => {
+  // The original palette and type libraries remain available and unchanged.
   assert.equal(styles.length, 50);
   for (const field of ['name', 'font', 'id'])
     assert.equal(new Set(styles.map((s) => s[field])).size, 50);
@@ -29,9 +32,9 @@ test('every subject has 50 unique style, palette, and font combinations', () => 
   for (const t of topics) {
     const models = modelsFor(t),
       drawn = new Set();
-    assert.equal(models.length, 50, t.name);
-    assert.equal(new Set(models.map((m) => m.name)).size, 50, t.name);
-    assert.equal(new Set(models.map((m) => m.colors.join())).size, 50, t.name);
+    assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT, t.name);
+    assert.equal(new Set(models.map((m) => m.name)).size, models.length, t.name);
+    assert.equal(new Set(models.map((m) => m.colors.join())).size, models.length, t.name);
     if (t.category !== 'Services') assert.ok(occasionBrief(t).curated, t.name);
     for (const m of models) {
       let art = '';
@@ -40,16 +43,40 @@ test('every subject has 50 unique style, palette, and font combinations', () => 
           photoHashes.set(m.setting, digest(readFileSync(`public/art/scenes/${m.setting}.jpg`)));
         art += photoHashes.get(m.setting);
       }
-      if (m.hero) {
+      if (m.hero || m.companion) {
         const svg = sceneSvg(m);
         assert.doesNotMatch(svg, /undefined|NaN|\[object Object\]/, m.name);
         art += digest(svg);
       }
       assert.ok(art, m.name);
+      // Art direction is metadata, but it must be complete enough to author a poster.
+      for (const field of ['id', 'concept', 'artDirection', 'composition', 'background', 'illustration', 'typography', 'decorative', 'export'])
+        assert.ok(m.definition?.[field], `${t.name}: ${m.name} missing ${field}`);
+      assert.equal(m.definition.subject, t.name);
+      assert.equal(m.definition.category, t.category);
+      assert.deepEqual(m.definition.export.width, 1080);
       drawn.add(art);
     }
-    // Hash the actual illustration/scene, before any poster title, logo, font or palette is applied.
-    assert.equal(drawn.size, 50, t.name + ' must not just repaint the same background');
+    // Hash the actual illustration/scene, before title, logo, font or palette is applied.
+    assert.equal(drawn.size, models.length, t.name + ' must not repaint the same artwork');
+    // Independently verify that colour and font changes cannot masquerade as new designs.
+    assert.equal(assertStructurallyUnique(models, t.name), models.length);
+    const coloured = models.map((m) => ({
+      ...m,
+      direction: 0,
+      local: null,
+      family: 'same',
+      hero: models[0].hero,
+      companion: models[0].companion,
+      setting: models[0].setting,
+      layout: 'same',
+      archetype: 'legacy',
+      arrangement: 'legacy',
+      typeSystem: 'classic',
+      ornament: 'x',
+      background: 'paper',
+    }));
+    assert.equal(new Set(coloured.map(structuralSignature)).size, 1, 'colour-only variants must collapse to one structural design');
   }
 });
 test('all 50 typefaces are bundled with local files and licenses', () => {
