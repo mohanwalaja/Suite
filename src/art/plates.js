@@ -23,6 +23,16 @@ export const PLATES = {
   'fest-rongali-bihu': 'The Bihu Drum',
   'fest-magh-bihu': 'The Harvest Granary',
   'fest-guru-purnima': 'The Teacher’s Lamp',
+  'fest-karva-chauth': 'The Moonlit Karwa',
+  'fest-bhai-dooj': 'The Blessing Thali',
+  'fest-aadi-perukku': 'The River Kalash',
+  'fest-mahavir-jayanti': 'The Jain Arch',
+  'fest-buddha-purnima': 'The Bodhi Lamp',
+  'fest-guru-nanak-jayanti': 'The Langar Bowl',
+  'fest-eid-al-fitr': 'The Eid Lantern',
+  'fest-eid-al-adha': 'The Silver Crescent',
+  'fest-christmas': 'The Winter Star',
+  'fest-easter': 'The Lily Basket',
 };
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);

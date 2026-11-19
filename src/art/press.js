@@ -267,6 +267,7 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}) {
     trim(c, h, foil, true);
     if (art) {
       c.save();
+      if (m.plate) c.globalAlpha = 0.38;
       c.translate(751, h * 0.52);
       c.rotate(-0.055);
       c.shadowColor = '#17202766';
@@ -610,7 +611,7 @@ function creativePlate(c, h, m, palette, im, art, adjust = {}) {
       // Sacred paintings and personal photographs are never overprinted this way.
       if (art && m.plate) {
         c.save();
-        c.globalAlpha = 0.72;
+        c.globalAlpha = 0.38;
         contain(c, art, area.x + 7, area.y + 7, area.w - 14, area.h - 14);
         c.restore();
       }
