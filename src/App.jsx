@@ -612,6 +612,18 @@ export default function App() {
             <Planner
               design={design}
               notify={notify}
+              onSavePlan={(next) => {
+                const id = uid();
+                const record = { id, design: { ...next, draftId: id }, savedAt: new Date().toISOString() };
+                const nextDrafts = [record, ...drafts];
+                if (persist('drafts', nextDrafts)) {
+                  setDrafts(nextDrafts);
+                  notify('Planned poster saved with its schedule note.', {
+                    label: 'View',
+                    onClick: () => navigate('library'),
+                  });
+                }
+              }}
               onUse={(next) => {
                 setDesign(next);
                 setQuality(null);

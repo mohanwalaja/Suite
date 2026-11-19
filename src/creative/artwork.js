@@ -80,6 +80,42 @@ export const arrangementAt = (index) => ARRANGEMENTS[((index % 10) + 10) % 10];
 export const arrangementById = (id) =>
   typeof id === 'number' ? arrangementAt(id) : arrangements.get(id) || ARRANGEMENTS[0];
 
+
+// Several legacy motif names are aliases that render exactly the same SVG (for example
+// 'stars', 'sky-map' and 'star-path'). Generated passes must not count those aliases as
+// different artwork, so pool entries are canonicalised before a pair is selected.
+const MOTIF_ALIASES = {
+  rose: 'rose', jasmine: 'rose', petals: 'rose', lily: 'rose',
+  garlands: 'garland',
+  diya: 'deepam',
+  ribbon: 'silk-knot', 'star-ribbon': 'silk-knot',
+  quill: 'stylus',
+  letters: 'invite', 'name-card': 'invite',
+  'wedding-seal': 'wax-seal',
+  anklets: 'bangles',
+  handprint: 'henna',
+  turmeric: 'betel-tray', 'sandal-tray': 'betel-tray', kumkum: 'betel-tray', modak: 'betel-tray', 'color-bowls': 'betel-tray',
+  'keepsake-box': 'jewellery-box',
+  flute: 'music', veena: 'music',
+  bunting: 'toran',
+  braid: 'necklace',
+  'baby-basket': 'basket',
+  'cloud-cradle': 'star-mobile',
+  nameplate: 'certificate', 'name-scroll': 'certificate',
+  rabbit: 'bear', 'pull-bird': 'duck',
+  book: 'storybook', album: 'storybook', 'baby-album': 'storybook',
+  sieve: 'mirror', parrot: 'hornbill', 'peace-dove': 'hornbill',
+  'quill-cup': 'pencils', sugarcane: 'grain', kolam: 'pookalam', palette: 'paintbox',
+  science: 'globe',
+  'regional-charts': 'chart-pair', 'house-folio': 'chart-pair', 'match-folio': 'chart-pair',
+  meridian: 'orbits', 'sky-map': 'star-path', stars: 'star-path',
+  quadrant: 'compass', 'sunrise-path': 'horizon', calendar: 'almanac', 'six-months': 'almanac',
+};
+export const canonicalMotif = (value) => {
+  const [key, ...rest] = String(value).split(':');
+  return MOTIF_ALIASES[key] ? [MOTIF_ALIASES[key], ...rest].join(':') : value;
+};
+
 // Only motifs belonging to this subject are eligible. Services reuse their own illustrated
 // vocabulary; occasions use the curated brief; devotional collections use their own attributes.
 export function motifPoolFor(topic, baseModels) {
@@ -88,7 +124,8 @@ export function motifPoolFor(topic, baseModels) {
     if (typeof value !== 'string' || value.startsWith('@') || value.startsWith('local:')) return;
     // Keep the full identifier: story:mother-book, sign:4 and division:9 are distinct
     // illustrations whose suffix is required by the illustration engine.
-    if (value && !pool.includes(value)) pool.push(value);
+    const canonical = canonicalMotif(value);
+    if (canonical && !pool.includes(canonical)) pool.push(canonical);
   };
   for (const m of baseModels) {
     add(m.hero);

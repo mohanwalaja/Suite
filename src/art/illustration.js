@@ -117,6 +117,11 @@ function creativeScene(m) {
     stack: () => R(15, 19, 226, 226, 'none', gold, 0.9, 3) + R(26, 8, 226, 226, 'none', gold, 0.55, 3),
   }[arr.decor];
   let out = (decor ? decor() : '') + C(128, 232, 82, 'url(#shadow)');
+  // Direction III adds a distinct cut-paper lattice, so even a repeated motif pair keeps a
+  // different shape language from Direction II.
+  if (m.pass === 2)
+    out += G(R(5, 5, 246, 246, 'none', gold, 0.85, 7), 'rotate(5 128 128)') +
+      rep(14, (i) => L(22 + i * 16, 18, 22 + i * 16, 30, gold, 0.8));
   if (m.hero) out += place(motif(m.hero), hx, hy, hw, hh);
   if (m.companion) out += place(motif(m.companion), cx, cy, cw, ch);
   if (!m.hero && m.companion) out += use('jasmine', 18, 22, 20);

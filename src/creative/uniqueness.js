@@ -25,7 +25,7 @@ export function structuralSignature(model) {
       model.typeSystem || 'classic',
       model.ornament || '-',
       model.background || '-',
-      model.direction ?? 0,
+      model.pass ?? model.direction ?? 0,
     ].join('|'),
   );
 }

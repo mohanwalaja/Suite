@@ -23,7 +23,7 @@ Production serves `dist/` and the API from one Express process (default port `30
 ## On your phone
 
 1. Open **Poster Studio**. Choose Services, Festivals, Hindu deities, or Special days and tap the subject selector.
-2. Tap **Models** in the bottom bar to browse 100 independently art-directed designs for that subject, with subject-specific artwork and its own composition, illustration arrangement, typography and decorative system. The original fifty-colour palette and typeface libraries stay available as finishing choices. The palette name also opens an independent library of all 50 palettes.
+2. Tap **Models** in the bottom bar to browse 150 independently art-directed designs for that subject, with subject-specific artwork and its own composition, illustration arrangement, typography and decorative system. The original fifty-colour palette and typeface libraries stay available as finishing choices. The palette name also opens an independent library of all 50 palettes.
 3. Every poster is **portrait (4:5), 1080 × 1350 px**. Change the headline typography; the original transparent ASTRO SIVAM signature stays on the artwork. **Caption & tags** lets you edit the caption, hashtags, headline, and tagline.
 4. **Save draft** keeps the editable design in Content Library on this browser. The current working design also autosaves. The download icon exports the full-resolution PNG, not a screenshot.
 5. **Publish post** shows the exact image, copy, and destination channels. After the one-time Meta setup, **Publish now** sends the selected channels together.
@@ -32,7 +32,7 @@ Included: ten service/tool subjects, 80 festivals, 44 special days, and 35 named
 
 ### Choose god pictures
 
-- On a phone, tap **God pictures** in the bottom bar (or **Hindu deities** in the Post editor). Browse the picture directory or search in English or Hindi, including aliases such as **Balaji**, **Ganpati**, **Mahadev**, and **महादेव**. Tap a deity, then an actual picture. The directory uses **37 individually AI-generated paintings across all 35 deities**. Each has at least one; Ganesha, Shiva, Lakshmi and Krishna have multiple scenes. A shared artwork is labeled rather than repeated as two identical directory covers. Counts are source paintings, not frames, color changes or generic vector faces. Each collection still offers **100 poster designs** using the artwork.
+- On a phone, tap **God pictures** in the bottom bar (or **Hindu deities** in the Post editor). Browse the picture directory or search in English or Hindi, including aliases such as **Balaji**, **Ganpati**, **Mahadev**, and **महादेव**. Tap a deity, then an actual picture. The directory uses **37 individually AI-generated paintings across all 35 deities**. Each has at least one; Ganesha, Shiva, Lakshmi and Krishna have multiple scenes. A shared artwork is labeled rather than repeated as two identical directory covers. Counts are source paintings, not frames, color changes or generic vector faces. Each collection still offers **150 poster designs** using the artwork.
 - **Download all** in the directory downloads the [complete portrait poster pack](public/downloads/ASTRO-SIVAM-Hindu-Deity-Posters.zip): **40 branded JPEGs in 35 named folders**, with captions. It is pre-rendered, so the phone downloads a single file instead of rendering the entire collection. Three paintings belong in two collections: Sita–Rama, Annapurna serving Shiva, and Radha hearing Krishna. The directory cards preview the branded 4:5 composition. See the [Jagannath portrait example](public/downloads/ASTRO-SIVAM-Jagannath-Portrait.jpg). The individual editor download is a full-resolution portrait PNG.
 - For a devotional festival, use **Choose a deity picture** to change the image **without changing the festival or your edited greeting**. Diwali offers Lakshmi and Ganesha, Navaratri offers Durga, Lakshmi and Saraswati, and Janmashtami offers Krishna. Observances such as Eid use their own non-figurative imagery; secular days do not automatically acquire a Hindu deity.
 - Hindu traditions include many more regional names and forms than a fixed directory can cover. **Add my pictures** lets you name a collection and import 1–12 pictures you have rights to publish. Picture pixels are saved in IndexedDB on this device, not in draft JSON or on an image server. Missing device pictures block export rather than being replaced with the wrong figure. Clearing site data removes these personal collections.
@@ -83,23 +83,23 @@ A public HTTPS origin and the temporary `/media/` route must be reachable by Met
 
 ## Creative Atelier
 
-The former fifty-model library is now the first half of a **CreativeRegistry** that registers 100 structurally different compositions for every subject: ten services, 80 festivals, 35 deities and 44 special days (16,900 definitions). Direction I preserves the original editorial studies byte-for-byte in saved drafts. Direction II rebuilds each study with one of ten composition archetypes, ten illustration arrangements, seven alternative typographic hierarchies, ten background constructions and ten decorative programmes. Colour, font substitution, mirroring and tiny offsets are explicitly excluded from the uniqueness check; the registry throws if two designs on a subject share one structural signature.
+The former fifty-model library is now the first half of a **CreativeRegistry** that registers 150 structurally different compositions for every subject: ten services, 80 festivals, 35 deities and 44 special days (25,350 definitions). Direction I preserves the original editorial studies byte-for-byte in saved drafts. Directions II and III rebuild each study twice with ten composition archetypes, ten illustration arrangements, seven alternative typographic hierarchies, ten background constructions and ten decorative programmes. Colour, font substitution, mirroring and tiny offsets are explicitly excluded from the uniqueness check; the registry throws if two designs on a subject share one structural signature.
 
 - `src/creative/registry.js`: CreativeRegistry and per-subject design definitions.
 - `src/creative/composition.js`, `artwork.js`, `typography.js`, `variation.js`: composition, graphic artwork, typography and bounded variation engines.
 - `src/creative/uniqueness.js`, `quality.js`: structural signatures, perceptual comparison and export checks.
 - `src/creative/rotation.js`, `history.js`, `captions.js`: persistent no-repeat rotation, event history and rotating English copy.
 - `src/art/press.js` and `src/art/illustration.js`: canvas composition renderer and locally generated SVG scenes.
-- **Daily Planner**: choose a subject and creative direction, review the suggested design and caption, note a schedule, and open the selection in the editor. Nothing is published automatically.
+- **Daily Planner**: choose a subject and creative direction, review the suggested design and caption, note a schedule, save the plan as a draft, review publishing status, and open the selection in the editor. Nothing is published automatically.
 - **Layers tab**: undo/redo, layer selection, artwork position and scale, focal shape, decorative system, text position, alignment guides, logo placement, duplicate design, export placement and an actionable quality report.
 - Rotation history (`astrosivam:creative-history-v1`) stores subject, design ID, date, source and a perceptual signature; it survives refreshes and can be cleared from the Planner. Meta publishing still requires the same configured approval and real account permissions.
 
 ## Verification
 
 ```sh
-npm test                       # catalogue, 16,900 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
+npm test                       # catalogue, 25,350 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
 npx playwright install chromium
-npm run test:browser           # 16 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
+npm run test:browser           # 17 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
 npm run build
 ```
 

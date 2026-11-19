@@ -54,3 +54,20 @@ test('layer controls undo and redo, quality report and uncropped story export', 
   expect(png.readUInt32BE(16)).toBe(1080);
   expect(png.readUInt32BE(20)).toBe(1920);
 });
+
+test('planner saves a scheduled draft without publishing', async ({ page }) => {
+  await page.getByRole('button', { name: 'Daily Planner' }).click();
+  await page.getByLabel('Schedule note (never publishes automatically)').fill('2026-11-20T09:00');
+  await page.getByRole('button', { name: 'Save plan draft' }).click();
+  await page.getByRole('button', { name: /^Content Library/ }).click();
+  await expect(page.locator('.draft-card')).toHaveCount(1);
+  await expect(page.locator('.scheduled-note')).toContainText('Planned');
+  const drafts = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('astrosivam:drafts') || '[]'),
+  );
+  expect(drafts[0].design.scheduledAt).toBe('2026-11-20T09:00');
+  const posts = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('astrosivam:published') || '[]'),
+  );
+  expect(posts).toEqual([]);
+});

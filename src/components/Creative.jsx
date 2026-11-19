@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Bookmark,
   CalendarDays,
   Check,
   Clock3,
@@ -21,14 +22,16 @@ import { ART_DIRECTIONS, BACKGROUNDS, ORNAMENTS } from '../creative/variation.js
 import { COMPOSITIONS } from '../creative/composition.js';
 import { TYPE_SYSTEMS } from '../creative/typography.js';
 import { history } from '../creative/history.js';
+import { load } from '../storage.js';
 import { perceptualSignature } from '../creative/uniqueness.js';
 import { rotation } from '../creative/rotation.js';
+import { DESIGN_COUNT } from '../creative/registry.js';
 import { createDailyCopy } from '../creative/captions.js';
 
 const CATEGORIES = ['Services', 'Festivals', 'Hindu deities', 'Special days'];
 const today = () => new Date().toISOString().slice(0, 10);
 
-export function Planner({ design, onUse, notify }) {
+export function Planner({ design, onUse, onSavePlan, notify }) {
   const [category, setCategory] = useState(design.topic.category);
   const [subjectId, setSubjectId] = useState(design.topic.id);
   const [direction, setDirection] = useState('');
@@ -44,6 +47,10 @@ export function Planner({ design, onUse, notify }) {
   );
   const copy = useMemo(() => (pick ? createDailyCopy(subject, pick, date) : null), [pick, subject, date]);
   const stats = useMemo(() => history.stats(), [historyTick]);
+  const published = useMemo(() => {
+    const posts = load('published', []);
+    return posts.filter((p) => p.title?.includes(subject.name));
+  }, [subject.name, historyTick]);
   const preview = pick
     ? {
         ...design,
@@ -76,6 +83,16 @@ export function Planner({ design, onUse, notify }) {
     setHistoryTick((n) => n + 1);
   }, [pick?.id, subject.id, date, direction, refresh]);
 
+  const planDesign = () =>
+    pick
+      ? { ...preview, caption: copy.caption, hashtags: copy.hashtags, scheduledAt: scheduled || null }
+      : null;
+  const savePlan = () => {
+    const d = planDesign();
+    if (!d) return;
+    onSavePlan(d);
+    notify('The planned poster was saved to your Content Library.');
+  };
   const apply = () => {
     if (!pick) return;
     history.record({
@@ -88,7 +105,7 @@ export function Planner({ design, onUse, notify }) {
       signature: perceptualSignature(document.querySelector('.planner-poster canvas')),
     });
     setHistoryTick((n) => n + 1);
-    onUse({ ...preview, caption: copy.caption, hashtags: copy.hashtags, scheduledAt: scheduled || null });
+    onUse(planDesign());
     notify(`${pick.name} is ready in the studio.`, {
       label: 'Open studio',
       onClick: () => (window.location.hash = 'studio'),
@@ -168,6 +185,9 @@ export function Planner({ design, onUse, notify }) {
             <button className="btn" onClick={() => setRefresh((n) => n + 1)}>
               <RotateCw size={14} /> New suggestion
             </button>
+            <button className="btn" onClick={savePlan} disabled={!pick}>
+              <Bookmark size={14} /> Save plan draft
+            </button>
           </div>
           <div className="planner-stats">
             <div>
@@ -206,7 +226,7 @@ export function Planner({ design, onUse, notify }) {
             </span>
             <h2>{subject.name}</h2>
           </div>
-          <span className="format-badge">{pick ? `${pick.id + 1} / 100` : 'No design'}</span>
+          <span className="format-badge">{pick ? `${pick.id + 1} / ${DESIGN_COUNT}` : 'No design'}</span>
         </div>
         {pick && (
           <div className="planner-preview">
@@ -245,6 +265,11 @@ export function Planner({ design, onUse, notify }) {
           </div>
           <p>{copy?.caption || ''}</p>
           <strong>{copy?.hashtags || ''}</strong>
+        </div>
+        <div className="planner-status">
+          <span className="section-label">Publishing status</span>
+          <strong>{published.length} confirmed post{published.length === 1 ? '' : 's'} for {subject.name}</strong>
+          <small>{published.length ? `Last published ${new Date(published[0].date).toLocaleString()}` : 'Nothing published yet. Review and publish from the studio when you are ready.'}</small>
         </div>
         <div className="info-note tiny">
           <ShieldCheck size={15} />

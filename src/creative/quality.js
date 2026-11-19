@@ -1,6 +1,7 @@
 import { BRAND, PORTRAIT, canvasSize } from '../../shared/poster-spec.js';
 import { fonts } from '../catalogue.js';
 import { modelsFor } from '../art/models.js';
+import { compositionById } from './composition.js';
 import { structuralSignature, perceptualSignature, similarity } from './uniqueness.js';
 import { englishOnly } from './typography.js';
 
@@ -14,8 +15,29 @@ export function inspectDesign(design) {
   if (!design?.topic?.name) problems.push(issue('subject', 'The subject is missing.', 'Choose a subject from the content collection.'));
   if (!design?.topic?.category)
     problems.push(issue('category', 'The subject category is missing.', 'Choose a service, festival, deity or special day.'));
-  if (!Number.isInteger(design?.styleId) || !modelsFor(design.topic)[design.styleId])
+  const model = Number.isInteger(design?.styleId) ? modelsFor(design.topic)[design.styleId] : null;
+  if (!model)
     problems.push(issue('design', 'The selected design definition is not available.', 'Pick another composition from the model library.'));
+  if (model?.pass > 0) {
+    const { art, text } = compositionById(model.compositionId).geometry(1250);
+    const overlap =
+      art.x < text.x + text.width &&
+      text.x < art.x + art.w &&
+      art.y < text.bottom &&
+      text.top < art.y + art.h;
+    if (overlap)
+      problems.push(
+        issue('overlap', 'The artwork and the text area intersect in this composition.', 'Choose a composition with a protected text panel.'),
+      );
+    if (text.top < 200 && text.x < 560)
+      problems.push(
+        issue('logo-zone', 'The text panel enters the reserved brand zone.', 'Select a composition that keeps the top-left clear.'),
+      );
+    if (text.x < 50 || text.x + text.width > 950 || text.bottom > 1170)
+      problems.push(
+        issue('margins', 'The text panel breaks the safe margins.', 'Choose another composition or reset layer offsets.'),
+      );
+  }
   if (design?.font && !fonts.includes(design.font))
     problems.push(issue('font', 'The headline typeface is not bundled with the studio.', 'Choose a bundled typeface from the Typography control.'));
   const text = [design?.headline, design?.tagline, design?.caption, design?.hashtags].join(' ');

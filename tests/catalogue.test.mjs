@@ -64,6 +64,7 @@ test('every subject has 100+ independently authored compositions, not recolours'
     const coloured = models.map((m) => ({
       ...m,
       direction: 0,
+      pass: 0,
       local: null,
       family: 'same',
       hero: models[0].hero,

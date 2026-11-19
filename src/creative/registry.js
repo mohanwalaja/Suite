@@ -10,7 +10,8 @@ import { ARRANGEMENTS, arrangementById, motifPairFor, motifPoolFor } from './art
 import { BACKGROUNDS, ORNAMENTS, variationFor, validateVariation } from './variation.js';
 import { hash32, assertStructurallyUnique } from './uniqueness.js';
 
-const MINIMUM = 100;
+const DESIGN_COUNT = 150;
+export const MIN_DESIGNS_PER_SUBJECT = 100;
 const tint = (hex, target, amount) =>
   '#' +
   [1, 3, 5]
@@ -50,8 +51,8 @@ export class CreativeRegistry {
     const base = this.base(topic);
     const pool = motifPoolFor(topic, base);
     const definitions = [];
-    for (let index = 0; index < MINIMUM; index++) {
-      const pass = index < base.length ? 0 : 1;
+    for (let index = 0; index < DESIGN_COUNT; index++) {
+      const pass = index < base.length ? 0 : index < base.length * 2 ? 1 : 2;
       const source = base[index % base.length];
       definitions.push(this.build(topic, source, index, pass, pool));
     }
@@ -84,8 +85,8 @@ export class CreativeRegistry {
           }
         : ARRANGEMENTS[variation.arrangementId] || arrangementById(variation.arrangementId);
     const [hero, companion] =
-      pass === 1 && !base.local && !base.setting
-        ? motifPairFor(pool, base.id, 1)
+      pass > 0 && !base.local && !base.setting
+        ? motifPairFor(pool, base.id, pass)
         : [base.hero || null, base.companion || null];
     // Sacred pictures and personal photographs are never swapped for another subject's art.
     const setting = base.painting || base.local ? base.setting || null : base.setting || null;
@@ -98,7 +99,7 @@ export class CreativeRegistry {
       subject: topic.name,
       subjectId: topic.id,
       category: topic.category,
-      concept: `${variation.direction.concept} · ${base.name}`,
+      concept: `${pass === 0 ? 'Inherited study' : pass === 1 ? 'Direction II' : 'Direction III'}: ${variation.direction.concept} · ${base.name}`,
       artDirection: variation.direction.artDirection,
       composition: composition.concept,
       compositionId: composition.id,
@@ -142,22 +143,24 @@ export class CreativeRegistry {
       ornament: ornament.id,
       backgroundIdForKey: background.id,
       direction: pass,
+      renderDirection: pass === 0 ? 0 : 1,
       directionId: variation.direction.id,
     };
     const colors = base.colors.map((colour, i) => {
       if (pass === 0) return colour;
-      const amount = 0.05 + ((base.id + i) % 7) * 0.008;
+      const amount = (pass === 2 ? 0.075 : 0.05) + ((base.id + i) % 7) * 0.008;
       return tint(colour, variation.direction.accent, i === 1 ? amount * 1.4 : amount);
     });
     return {
       ...base,
       id: index,
-      name: pass === 0 ? base.name : `${variation.direction.name} · ${base.name}`,
+      name: pass === 0 ? base.name : `${variation.direction.name}${pass === 2 ? ' II' : ''} · ${base.name}`,
       hero,
       companion,
       setting,
       colors,
-      direction: pass,
+      direction: pass === 0 ? 0 : 1,
+      pass,
       directionId: variation.direction.id,
       compositionId: composition.id,
       arrangement: pass === 0 ? arrangement.id : variation.arrangementId,
@@ -180,6 +183,6 @@ export class CreativeRegistry {
 }
 
 export const registry = new CreativeRegistry();
-export const MIN_DESIGNS_PER_SUBJECT = MINIMUM;
+export { DESIGN_COUNT };
 export { COMPOSITIONS, TYPE_SYSTEMS, ARRANGEMENTS, BACKGROUNDS, ORNAMENTS };
 export { baseCollectionInfo, basePicturesFor };

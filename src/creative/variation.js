@@ -174,6 +174,7 @@ export const ORNAMENTS = [
 
 const directions = new Map(ART_DIRECTIONS.map((d, i) => [d.id, i]));
 const at = (n, length) => ((n % length) + length) % length;
+const COMPOSITION_IDS = ['editorial', 'swiss', 'panorama', 'diptych', 'medallion', 'column', 'archive', 'kolam', 'blueprint', 'spotlight'];
 
 // Pass zero keeps the legacy authored composition untouched. Pass one changes every
 // structural axis at once, so it can never be mistaken for a recolour of the same poster.
@@ -203,35 +204,39 @@ export function variationFor(baseIndex, pass, legacySequence = 0, pool = 8) {
       direction,
     };
   }
-  const directionIndex = at(baseIndex * 3 + 5, ART_DIRECTIONS.length);
+  const isThird = pass === 2;
+  const directionIndex = isThird
+    ? at(baseIndex * 5 + 7, ART_DIRECTIONS.length)
+    : at(baseIndex * 3 + 5, ART_DIRECTIONS.length);
   return {
-    pass: 1,
+    pass,
     directionIndex,
-    compositionId: ['editorial', 'swiss', 'panorama', 'diptych', 'medallion', 'column', 'archive', 'kolam', 'blueprint', 'spotlight'][
-      at(baseIndex * 3 + 1, 10)
-    ],
-    // The extra term shifts the arrangement every eight studies, so a repeated motif pair
-    // is always mounted in a new spatial grammar (no 40-design cycle).
-    arrangementId: at(
-      baseIndex * arrangementStride(pool) + Math.floor(baseIndex / pool) + 3,
-      10,
-    ),
+    compositionId: isThird
+      ? COMPOSITION_IDS[at(baseIndex * 7 + 2, 10)]
+      : COMPOSITION_IDS[at(baseIndex * 3 + 1, 10)],
+    // Each pass through the subject vocabulary advances the mounting by a different rule.
+    // A repeated motif pair therefore never receives the same spatial grammar.
+    arrangementId: (() => {
+      const inherited = at(baseIndex * arrangementStride(pool) + Math.floor(baseIndex / pool) + 3, 10);
+      return isThird ? at(inherited * 3 + 5, 10) : inherited;
+    })(),
     // 1..7 only: the classic system belongs exclusively to the inherited fifty.
-    typeSystemId: at(baseIndex * 5 + 2, 7) + 1,
-    backgroundId: at(baseIndex * 7 + 4, 10),
-    ornamentId: at(baseIndex * 3 + 6, 10),
+    typeSystemId: isThird ? at(baseIndex * 3 + 4, 7) + 1 : at(baseIndex * 5 + 2, 7) + 1,
+    backgroundId: isThird ? at(baseIndex * 3 + 2, 10) : at(baseIndex * 7 + 4, 10),
+    ornamentId: isThird ? at(baseIndex * 7 + 1, 10) : at(baseIndex * 3 + 6, 10),
     direction: ART_DIRECTIONS[directionIndex],
   };
 }
 
 export function validateVariation(v) {
+  if (!v) return false;
+  if (v.pass === 0) return v.typeSystemId === 'classic' && v.compositionId === 'legacy';
   return (
-    !!v &&
-    v.pass === 0
-      ? v.typeSystemId === 'classic' && v.compositionId === 'legacy'
-      : v.pass === 1 &&
-        v.compositionId !== 'legacy' &&
-        v.arrangementId !== 'legacy-0' &&
-        v.typeSystemId !== 'classic'
+    (v.pass === 1 || v.pass === 2) &&
+    v.compositionId !== 'legacy' &&
+    typeof v.arrangementId === 'number' &&
+    typeof v.typeSystemId === 'number' &&
+    v.typeSystemId >= 1 &&
+    v.typeSystemId <= 7
   );
 }
