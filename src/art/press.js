@@ -301,7 +301,14 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null)
       c.restore();
     }
     if (m.plate && m.deityPicture && deityIm)
-      deityVignette(c, deityIm, 596, h * 0.15, Math.min(380, h * 0.31), foil);
+      deityVignette(
+        c,
+        deityIm,
+        596,
+        h * 0.15,
+        Math.min(m.deityInPlate ? 210 : 380, h * (m.deityInPlate ? 0.17 : 0.31)),
+        foil,
+      );
     return box(65, h * 0.29, art ? 440 : 463, h * 0.826, 145);
   }
   trim(c, h, foil, false);
@@ -649,7 +656,7 @@ function creativePlate(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
     }
   });
   if (m.plate && m.deityPicture && deityIm) {
-    const size = Math.min(area.w, area.h) * 0.72;
+    const size = Math.min(area.w, area.h) * (m.deityInPlate ? 0.34 : 0.72);
     deityVignette(c, deityIm, area.x + area.w - size - 16, area.y + 16, size, foil);
   }
   if (inset && art) {

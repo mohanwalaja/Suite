@@ -63,6 +63,20 @@ export const PLATES = {
   'fest-vishu': 'The Vishukkani Mirror',
   'fest-chhath-puja': 'The Sun Offering',
   'fest-karthigai-deepam': 'The Lamp Steps',
+  'fest-thaipusam': 'The Murugan Peacock Arch',
+  'fest-akshaya-tritiya': 'The Lakshmi Abundance',
+  'fest-rama-navami': 'The Rama Court',
+  'fest-hanuman-jayanti': 'The Hanuman Lamp',
 };
+
+// These replacements were painted with the subject's own deity as the central figure.
+// The renderer therefore uses a smaller devotional vignette instead of repeating a large
+// framed portrait over an image that already contains that deity.
+export const DEITY_IN_PLATE = new Set([
+  'fest-thaipusam',
+  'fest-akshaya-tritiya',
+  'fest-rama-navami',
+  'fest-hanuman-jayanti',
+]);
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);

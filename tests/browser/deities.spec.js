@@ -178,6 +178,30 @@ test('plated festivals keep their specific deity picture selectable and framed',
   expect(paintings).toContain('chaturthi-ganesha');
 });
 
+test('new deity-centred plates keep Murugan, Sri Rama and Lakshmi as the specific pictures', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const found = await page.evaluate(async () => {
+    const { picturesFor } = await import('/src/art/models.js');
+    const { topics } = await import('/src/catalogue.js');
+    const expected = {
+      'fest-thaipusam': 'dev-murugan',
+      'fest-rama-navami': 'dev-rama',
+      'fest-akshaya-tritiya': 'diwali-lakshmi',
+    };
+    return Object.fromEntries(
+      Object.entries(expected).map(([id, picture]) => [
+        id,
+        picturesFor(topics.find((t) => t.id === id)).map((m) => m.deityPicture),
+      ]),
+    );
+  });
+  expect(found['fest-thaipusam']).toContain('dev-murugan');
+  expect(found['fest-rama-navami']).toContain('dev-rama');
+  expect(found['fest-akshaya-tritiya']).toContain('diwali-lakshmi');
+});
+
 test('a regional deity accepts multiple local pictures and a saved draft uses the selected one after reload', async ({
   page,
 }) => {

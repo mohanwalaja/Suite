@@ -100,7 +100,7 @@ The former fifty-model library is now the first half of a **CreativeRegistry** t
 ```sh
 npm test                       # catalogue, 25,350 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
 npx playwright install chromium
-npm run test:browser           # 19 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
+npm run test:browser           # 20 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
 npm run build
 ```
 

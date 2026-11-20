@@ -1,6 +1,6 @@
 import { DEITIES, paintings, paintingsOf } from './deities.js';
 import { occasionBrief } from './briefs.js';
-import { PLATES, plateFor } from './plates.js';
+import { DEITY_IN_PLATE, PLATES, plateFor } from './plates.js';
 // Model IDs remain stable for saved posters. Each row is an illustration brief, not a tint.
 // title | focal illustration (or @photograph) | composition | supporting element | optional setting
 const rows = (text) =>
@@ -696,6 +696,7 @@ export function modelsFor(topic) {
       m.painting = false;
       m.medium = 'Painted scene';
       m.detail = PLATES[plateId];
+      m.deityInPlate = DEITY_IN_PLATE.has(plateId);
       m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}:${m.deityPicture || ''}`;
     }
   if (cache.size >= 48) cache.delete(cache.keys().next().value);
