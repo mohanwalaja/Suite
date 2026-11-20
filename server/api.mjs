@@ -1,19 +1,153 @@
 import express from 'express';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { imageSize } from 'image-size';
 import { BRAND, PORTRAIT, POSTER_REVISION } from '../shared/poster-spec.js';
+
 const hex = () => crypto.randomBytes(24).toString('hex');
+const sha = (value) => crypto.createHash('sha256').update(value).digest('hex');
+
+// Persistent server state. Tokens and poster bytes stay on disk with 0600 permissions and
+// are never returned to the browser; only public job metadata crosses the API boundary.
+function createStore(env) {
+  const dir = path.resolve(env.STUDIO_DATA_DIR || '.data');
+  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  const mediaDir = path.join(dir, 'media');
+  fs.mkdirSync(mediaDir, { recursive: true, mode: 0o700 });
+  const file = path.join(dir, 'studio-state.json');
+  let state = { sessions: {}, jobs: [], notifications: [] };
+  try {
+    const loaded = JSON.parse(fs.readFileSync(file, 'utf8'));
+    state = {
+      sessions: loaded.sessions && typeof loaded.sessions === 'object' ? loaded.sessions : {},
+      jobs: Array.isArray(loaded.jobs) ? loaded.jobs : [],
+      notifications: Array.isArray(loaded.notifications) ? loaded.notifications : [],
+    };
+  } catch {}
+  const save = () => {
+    const tmp = file + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state), { mode: 0o600 });
+    fs.renameSync(tmp, file);
+    try {
+      fs.chmodSync(file, 0o600);
+    } catch {}
+  };
+  return { state, save, mediaDir, file };
+}
+
+const zonedParts = (ts, timeZone) => {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(new Date(ts));
+  const get = (t) => Number(parts.find((p) => p.type === t)?.value || 0);
+  return [get('year'), get('month'), get('day'), get('hour'), get('minute'), get('second')];
+};
+
+// Convert a wall-clock time in an IANA timezone to a UTC timestamp, rejecting DST gaps.
+function zonedTimeToUtc(local, timeZone) {
+  if (typeof local !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(local))
+    throw Error('Choose a local date and time for the publication.');
+  try {
+    new Intl.DateTimeFormat('en-GB', { timeZone }).format();
+  } catch {
+    throw Error('Choose a valid IANA timezone for the publication.');
+  }
+  const [y, mo, d, h, mi] = local.split(/[-T:]/).map(Number);
+  const guess = Date.UTC(y, mo - 1, d, h, mi);
+  if (Number.isNaN(guess)) throw Error('Choose a valid local date and time.');
+  const offsetAt = (ts) => {
+    const [yy, mm, dd, hh, min] = zonedParts(ts, timeZone);
+    return Date.UTC(yy, mm - 1, dd, hh, min) - Math.floor(ts / 60000) * 60000;
+  };
+  const ts = guess - offsetAt(guess);
+  const [yy, mm, dd, hh, min] = zonedParts(ts, timeZone);
+  if (yy !== y || mm !== mo || dd !== d || hh !== h || min !== mi)
+    throw Error('That local time does not exist in the chosen timezone.');
+  return ts;
+}
+
 export function createApi(env = process.env, fetcher = fetch) {
   const app = express();
   app.disable('x-powered-by');
-  const sessions = new Map(),
-    media = new Map();
+  const store = createStore(env);
+  const sessions = new Map(
+    Object.entries(store.state.sessions).map(([id, s]) => [
+      id,
+      { ...s, requests: new Map(), busy: false },
+    ]),
+  );
+  const media = new Map();
+  const jobs = store.state.jobs;
+  const notifications = store.state.notifications;
+  const minLead = Number.isFinite(Number(env.SCHEDULE_MIN_LEAD_MS))
+    ? Number(env.SCHEDULE_MIN_LEAD_MS)
+    : 120000;
+  const tickMs = Number.isFinite(Number(env.SCHEDULER_TICK_MS))
+    ? Number(env.SCHEDULER_TICK_MS)
+    : 15000;
+  const maxAttempts = 3;
+
+  const saveState = () => {
+    store.state.sessions = Object.fromEntries(
+      [...sessions].map(([id, s]) => [
+        id,
+        {
+          id,
+          pages: s.pages || [],
+          selected: s.selected || null,
+          log: s.log || [],
+          until: s.until || 0,
+          ...(s.oauth ? { oauth: s.oauth } : {}),
+        },
+      ]),
+    );
+    store.save();
+  };
+  const notify = (sessionId, level, text, jobId = null) => {
+    notifications.unshift({
+      id: hex(),
+      sessionId,
+      level,
+      text,
+      jobId,
+      at: new Date().toISOString(),
+    });
+    if (notifications.length > 200) notifications.length = 200;
+    saveState();
+  };
+  const publicJob = (j) => ({
+    id: j.id,
+    title: j.title,
+    platforms: j.platforms,
+    localTime: j.localTime,
+    timezone: j.timezone,
+    dueAt: j.dueAt,
+    status: j.status,
+    attempts: j.attempts,
+    maxAttempts: j.maxAttempts,
+    createdAt: j.createdAt,
+    updatedAt: j.updatedAt,
+    publishedAt: j.publishedAt || null,
+    lastError: j.lastError || null,
+    retryAllowed: !j.publishAttempted && ['failed', 'cancelled'].includes(j.status),
+    results: j.results || [],
+  });
+
   const version = /^v\d+\.\d+$/.test(env.META_GRAPH_VERSION || '')
     ? env.META_GRAPH_VERSION
     : 'v23.0';
   const base = (env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
   const ready = !!(env.META_APP_ID && env.META_APP_SECRET && /^https:\/\/[^/]+$/.test(base));
   const redirect = base + '/api/meta/callback';
+
   function cleanup() {
     const now = Date.now();
     for (const [k, v] of sessions) if (v.until < now) sessions.delete(k);
@@ -21,7 +155,156 @@ export function createApi(env = process.env, fetcher = fetch) {
   }
   const timer = setInterval(cleanup, 60000);
   timer.unref();
-  // Compatibility for bookmarks/older clients: the originals now ship with the app.
+
+  async function graph(route, token, params, method = 'GET') {
+    const u = new URL(`https://graph.facebook.com/${version}/${route}`);
+    const opts = { method, headers: {}, signal: AbortSignal.timeout(25000) };
+    if (token) opts.headers.Authorization = 'Bearer ' + token;
+    if (method === 'GET') u.search = new URLSearchParams(params || {});
+    else opts.body = params instanceof FormData ? params : new URLSearchParams(params || {});
+    const r = await fetcher(u, opts);
+    const data = await r.json();
+    if (!r.ok || data.error) {
+      const e = new Error(
+        data.error?.error_user_msg ||
+          'Meta could not complete this request. Check the account permissions and reconnect if needed.',
+      );
+      e.metaCode = data.error?.code;
+      throw e;
+    }
+    return data;
+  }
+
+  const publicPage = (p) =>
+    p
+      ? { id: p.id, name: p.name, instagram: p.ig?.username || null, instagramId: p.ig?.id || null }
+      : null;
+  const active = (s) => s.pages.find((p) => p.id === s.selected);
+
+  // The only place that talks to Meta for a publication. Immediate publishing and the
+  // scheduler call the same function, so a scheduled post is never a simulated one.
+  async function sendToMeta(p, bytes, caption, platforms, title, s) {
+    const results = [];
+    for (const channel of new Set(platforms)) {
+      try {
+        let id;
+        if (channel === 'facebook') {
+          const form = new FormData();
+          form.append('source', new Blob([bytes], { type: 'image/jpeg' }), 'poster.jpg');
+          form.append('message', caption);
+          const out = await graph(`${p.id}/photos`, p.token, form, 'POST');
+          id = out.post_id || out.id;
+        } else {
+          const file = hex() + '.jpg';
+          media.set(file, { bytes, until: Date.now() + 3600000 });
+          const container = await graph(
+            `${p.ig.id}/media`,
+            p.token,
+            { image_url: base + '/media/' + file, caption },
+            'POST',
+          );
+          let finished = false;
+          for (let i = 0; i < 16; i++) {
+            const stat = await graph(container.id, p.token, { fields: 'status_code' });
+            if (stat.status_code === 'FINISHED') {
+              finished = true;
+              break;
+            }
+            if (['ERROR', 'EXPIRED'].includes(stat.status_code))
+              throw Error(
+                'Instagram could not process this image. Check that the public image URL is reachable.',
+              );
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+          if (!finished)
+            throw Error(
+              'Instagram is still processing. No publish command was sent. Please try again later.',
+            );
+          const out = await graph(
+            `${p.ig.id}/media_publish`,
+            p.token,
+            { creation_id: container.id },
+            'POST',
+          );
+          id = out.id;
+        }
+        if (!id)
+          throw Error('Meta did not confirm a post ID. Check the destination before retrying.');
+        const result = {
+          channel,
+          ok: true,
+          id,
+          account: channel === 'instagram' ? p.ig.username : p.name,
+          date: new Date().toISOString(),
+          title: String(title || `${BRAND.name} poster`).slice(0, 100),
+        };
+        results.push(result);
+        s.log.unshift(result);
+        s.log = s.log.slice(0, 150);
+        saveState();
+      } catch (e) {
+        results.push({ channel, ok: false, error: e.message || 'Publishing failed.' });
+      }
+    }
+    return results;
+  }
+
+  function validatePost(req) {
+    const p = active(req.studio);
+    if (!ready || !p)
+      return { error: 'Connect a Facebook Page or Instagram professional account before publishing.', status: 409 };
+    const { image, caption, platforms, requestId, title, pageId } = req.body || {};
+    if (pageId !== p.id)
+      return {
+        error: 'Your publishing Page has changed. Refresh the account connection and review the destination again.',
+        status: 409,
+      };
+    if (
+      typeof requestId !== 'string' ||
+      !/^[\w-]{8,100}$/.test(requestId) ||
+      !Array.isArray(platforms) ||
+      !platforms.length ||
+      platforms.length > 2 ||
+      platforms.some((v) => !['facebook', 'instagram'].includes(v)) ||
+      typeof caption !== 'string' ||
+      caption.length > 2200 ||
+      typeof image !== 'string' ||
+      !image.startsWith('data:image/jpeg;base64,')
+    )
+      return {
+        error: 'Choose a channel and a JPEG poster, and keep the post copy within 2,200 characters.',
+        status: 400,
+      };
+    if (platforms.includes('instagram') && !p.ig?.id)
+      return { error: 'Link an Instagram professional account to this Facebook Page first.', status: 400 };
+    if (platforms.includes('instagram') && (caption.match(/#[\p{L}\p{N}_]+/gu) || []).length > 30)
+      return { error: 'Use no more than 30 hashtags for Instagram.', status: 400 };
+    const bytes = Buffer.from(image.slice(23), 'base64');
+    if (bytes.length > 6e6 || bytes.length < 3 || bytes[0] !== 255 || bytes[1] !== 216 || bytes[2] !== 255)
+      return { error: 'Invalid JPEG image.', status: 400 };
+    if (req.body.posterRevision !== POSTER_REVISION)
+      return {
+        error: 'Reload Poster Studio to publish the current portrait with the transparent ASTRO SIVAM signature.',
+        status: 409,
+      };
+    try {
+      const { type, width, height, orientation } = imageSize(bytes);
+      if (
+        type !== 'jpg' ||
+        (orientation && orientation !== 1) ||
+        width !== PORTRAIT.width ||
+        height !== PORTRAIT.height
+      )
+        return {
+          error: `Publish a ${PORTRAIT.width} × ${PORTRAIT.height} portrait JPEG exported from Poster Studio.`,
+          status: 400,
+        };
+    } catch {
+      return { error: 'Could not read the poster dimensions. Export a new poster and try again.', status: 400 };
+    }
+    return { page: p, bytes, caption, platforms, requestId, title: String(title || `${BRAND.name} poster`).slice(0, 100) };
+  }
+
   app.get('/api/brand/:kind', (req, res) => {
     const kind = req.params.kind;
     if (kind !== 'icon' && kind !== 'logo') return res.sendStatus(404);
@@ -66,13 +349,10 @@ export function createApi(env = process.env, fetcher = fetch) {
     }
     s.until = Date.now() + 7 * 86400000;
     req.studio = s;
+    saveState();
     next();
   });
-  const publicPage = (p) =>
-    p
-      ? { id: p.id, name: p.name, instagram: p.ig?.username || null, instagramId: p.ig?.id || null }
-      : null;
-  const active = (s) => s.pages.find((p) => p.id === s.selected);
+
   app.get('/api/meta/status', (req, res) =>
     res.json({
       configured: ready,
@@ -89,6 +369,7 @@ export function createApi(env = process.env, fetcher = fetch) {
         .json({ error: 'Configure the Meta app and public HTTPS URL on the server first.' });
     const state = hex();
     req.studio.oauth = { state, until: Date.now() + 600000 };
+    saveState();
     const url = new URL(`https://www.facebook.com/${version}/dialog/oauth`);
     url.search = new URLSearchParams({
       client_id: env.META_APP_ID,
@@ -100,24 +381,6 @@ export function createApi(env = process.env, fetcher = fetch) {
     });
     res.redirect(url.href);
   });
-  async function graph(route, token, params, method = 'GET') {
-    const u = new URL(`https://graph.facebook.com/${version}/${route}`);
-    const opts = { method, headers: {}, signal: AbortSignal.timeout(25000) };
-    if (token) opts.headers.Authorization = 'Bearer ' + token;
-    if (method === 'GET') u.search = new URLSearchParams(params || {});
-    else opts.body = params instanceof FormData ? params : new URLSearchParams(params || {});
-    const r = await fetcher(u, opts);
-    const data = await r.json();
-    if (!r.ok || data.error) {
-      const e = new Error(
-        data.error?.error_user_msg ||
-          'Meta could not complete this request. Check the account permissions and reconnect if needed.',
-      );
-      e.metaCode = data.error?.code;
-      throw e;
-    }
-    return data;
-  }
   app.get('/api/meta/callback', async (req, res) => {
     const s = req.studio,
       flow = s.oauth;
@@ -151,9 +414,7 @@ export function createApi(env = process.env, fetcher = fetch) {
           'POST',
         );
         access = t.access_token || access;
-      } catch {
-        /* A valid short-lived token can still complete the authorized connection. */
-      }
+      } catch {}
       let after,
         pages = [];
       for (let i = 0; i < 10; i++) {
@@ -176,6 +437,7 @@ export function createApi(env = process.env, fetcher = fetch) {
           ig: p.instagram_business_account,
         }));
       s.selected = s.pages[0]?.id || null;
+      saveState();
       return back(s.selected ? 'connected' : 'no-pages');
     } catch {
       return back('failed');
@@ -186,164 +448,230 @@ export function createApi(env = process.env, fetcher = fetch) {
     if (!page)
       return res.status(400).json({ error: 'Select a Page authorized for this workspace.' });
     req.studio.selected = page.id;
+    saveState();
     res.json({ account: publicPage(page) });
   });
   app.post('/api/meta/disconnect', (req, res) => {
     req.studio.pages = [];
     req.studio.selected = null;
     delete req.studio.oauth;
+    saveState();
     res.json({ disconnected: true });
   });
+
   app.get('/api/publishing/history', (req, res) => res.json({ posts: req.studio.log }));
+
+  // Immediate publication: unchanged API contract, now sharing Meta publishing with the
+  // scheduler so both paths produce real, server-confirmed post IDs.
   app.post('/api/publish', async (req, res) => {
-    const s = req.studio,
-      p = active(s);
-    if (!ready || !p)
-      return res.status(409).json({
-        error: 'Connect a Facebook Page or Instagram professional account before publishing.',
-      });
-    const { image, caption, platforms, requestId, title, pageId } = req.body || {};
-    if (pageId !== p.id)
-      return res.status(409).json({
-        error:
-          'Your publishing Page has changed. Refresh the account connection and review the destination again.',
-      });
-    if (
-      typeof requestId !== 'string' ||
-      !/^[\w-]{8,100}$/.test(requestId) ||
-      !Array.isArray(platforms) ||
-      !platforms.length ||
-      platforms.length > 2 ||
-      platforms.some((v) => !['facebook', 'instagram'].includes(v)) ||
-      typeof caption !== 'string' ||
-      caption.length > 2200 ||
-      typeof image !== 'string' ||
-      !image.startsWith('data:image/jpeg;base64,')
-    )
-      return res.status(400).json({
-        error:
-          'Choose a channel and a JPEG poster, and keep the post copy within 2,200 characters.',
-      });
-    if (platforms.includes('instagram') && !p.ig?.id)
-      return res
-        .status(400)
-        .json({ error: 'Link an Instagram professional account to this Facebook Page first.' });
-    if (platforms.includes('instagram') && (caption.match(/#[\p{L}\p{N}_]+/gu) || []).length > 30)
-      return res.status(400).json({ error: 'Use no more than 30 hashtags for Instagram.' });
-    const bytes = Buffer.from(image.slice(23), 'base64');
-    if (
-      bytes.length > 6e6 ||
-      bytes.length < 3 ||
-      bytes[0] !== 255 ||
-      bytes[1] !== 216 ||
-      bytes[2] !== 255
-    )
-      return res.status(400).json({ error: 'Invalid JPEG image.' });
-    if (req.body.posterRevision !== POSTER_REVISION) {
-      return res
-        .status(409)
-        .json({
-          error:
-            'Reload Poster Studio to publish the current portrait with the transparent ASTRO SIVAM signature.',
-        });
-    }
-    // Enforce the actual image size, not a caller-supplied aspect ratio or format name.
-    try {
-      const { type, width, height, orientation } = imageSize(bytes);
-      if (
-        type !== 'jpg' ||
-        (orientation && orientation !== 1) ||
-        width !== PORTRAIT.width ||
-        height !== PORTRAIT.height
-      ) {
-        return res.status(400).json({
-          error: `Publish a ${PORTRAIT.width} × ${PORTRAIT.height} portrait JPEG exported from Poster Studio.`,
-        });
-      }
-    } catch {
-      return res.status(400).json({
-        error: 'Could not read the poster dimensions. Export a new poster and try again.',
-      });
-    }
+    const s = req.studio;
+    const check = validatePost(req);
+    if (check.error) return res.status(check.status).json({ error: check.error });
+    const { bytes, caption, platforms, requestId, title } = check;
     const done = s.requests.get(requestId);
     if (done)
       return done.pending
         ? res.status(409).json({ error: 'This post is already being published.' })
         : res.json(done);
-    if (s.busy)
-      return res.status(429).json({ error: 'Please wait for the current post to finish.' });
+    if (s.busy) return res.status(429).json({ error: 'Please wait for the current post to finish.' });
     s.busy = true;
     s.requests.set(requestId, { pending: true });
-    const results = [];
     try {
-      for (const channel of new Set(platforms)) {
-        try {
-          let id;
-          if (channel === 'facebook') {
-            const form = new FormData();
-            form.append('source', new Blob([bytes], { type: 'image/jpeg' }), 'poster.jpg');
-            form.append('message', caption);
-            const out = await graph(`${p.id}/photos`, p.token, form, 'POST');
-            id = out.post_id || out.id;
-          } else {
-            const file = hex() + '.jpg';
-            media.set(file, { bytes, until: Date.now() + 3600000 });
-            const container = await graph(
-              `${p.ig.id}/media`,
-              p.token,
-              { image_url: base + '/media/' + file, caption },
-              'POST',
-            );
-            let finished = false;
-            for (let i = 0; i < 16; i++) {
-              const stat = await graph(container.id, p.token, { fields: 'status_code' });
-              if (stat.status_code === 'FINISHED') {
-                finished = true;
-                break;
-              }
-              if (['ERROR', 'EXPIRED'].includes(stat.status_code))
-                throw Error(
-                  'Instagram could not process this image. Check that the public image URL is reachable.',
-                );
-              await new Promise((r) => setTimeout(r, 2000));
-            }
-            if (!finished)
-              throw Error(
-                'Instagram is still processing. No publish command was sent. Please try again later.',
-              );
-            const out = await graph(
-              `${p.ig.id}/media_publish`,
-              p.token,
-              { creation_id: container.id },
-              'POST',
-            );
-            id = out.id;
-          }
-          if (!id)
-            throw Error('Meta did not confirm a post ID. Check the destination before retrying.');
-          const result = {
-            channel,
-            ok: true,
-            id,
-            account: channel === 'instagram' ? p.ig.username : p.name,
-            date: new Date().toISOString(),
-            title: String(title || `${BRAND.name} poster`).slice(0, 100),
-          };
-          results.push(result);
-          s.log.unshift(result);
-          s.log = s.log.slice(0, 150);
-        } catch (e) {
-          results.push({ channel, ok: false, error: e.message || 'Publishing failed.' });
-        }
-      }
+      const results = await sendToMeta(check.page, bytes, caption, platforms, title, s);
       const out = { results };
       s.requests.set(requestId, out);
       if (s.requests.size > 200) s.requests.delete(s.requests.keys().next().value);
+      saveState();
       res.json(out);
     } finally {
       s.busy = false;
     }
   });
+
+  // Server-side scheduling. Saving a planner note never calls this endpoint; only an
+  // explicit "Schedule publication" action creates a job, and only the server confirms it.
+  app.post('/api/schedule', (req, res) => {
+    const check = validatePost(req);
+    if (check.error) return res.status(check.status).json({ error: check.error });
+    const { localTime, timezone } = req.body || {};
+    let dueAt;
+    try {
+      dueAt = zonedTimeToUtc(localTime, timezone);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
+    if (!Number.isFinite(dueAt) || dueAt < Date.now() + minLead)
+      return res
+        .status(400)
+        .json({ error: 'Choose a publication time at least two minutes from now.' });
+    const existing = jobs.find((j) => j.id === check.requestId);
+    if (existing) {
+      if (existing.sessionId !== req.studio.id)
+        return res.status(409).json({ error: 'This request ID is already in use.' });
+      return res.json(publicJob(existing));
+    }
+    const fingerprint = sha(
+      [check.page.id, [...check.platforms].sort().join(','), sha(check.caption), dueAt].join('|'),
+    );
+    if (
+      jobs.some(
+        (j) => j.fingerprint === fingerprint && ['scheduled', 'publishing'].includes(j.status),
+      )
+    )
+      return res
+        .status(409)
+        .json({ error: 'An identical post is already scheduled for that exact time.' });
+    const id = check.requestId;
+    const file = path.join(store.mediaDir, id + '.jpg');
+    try {
+      fs.writeFileSync(file, check.bytes, { mode: 0o600 });
+    } catch {
+      return res.status(500).json({ error: 'The scheduled poster could not be stored safely.' });
+    }
+    const job = {
+      id,
+      sessionId: req.studio.id,
+      pageId: check.page.id,
+      platforms: [...new Set(check.platforms)],
+      caption: check.caption,
+      title: check.title,
+      localTime,
+      timezone,
+      dueAt,
+      imageFile: path.basename(file),
+      fingerprint,
+      status: 'scheduled',
+      attempts: 0,
+      maxAttempts,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      publishedAt: null,
+      nextAttemptAt: dueAt,
+      lastError: null,
+      results: [],
+    };
+    jobs.push(job);
+    saveState();
+    res.status(201).json(publicJob(job));
+  });
+
+  app.get('/api/schedule', (req, res) => {
+    const mine = jobs.filter((j) => j.sessionId === req.studio.id);
+    res.json({
+      jobs: mine.map(publicJob),
+      notifications: notifications
+        .filter((n) => n.sessionId === req.studio.id)
+        .slice(0, 50)
+        .map(({ id, level, text, jobId, at }) => ({ id, level, text, jobId, at })),
+    });
+  });
+
+  app.post('/api/schedule/:id/cancel', (req, res) => {
+    const job = jobs.find((j) => j.id === req.params.id && j.sessionId === req.studio.id);
+    if (!job) return res.status(404).json({ error: 'Scheduled post not found.' });
+    if (!['scheduled', 'failed'].includes(job.status))
+      return res.status(409).json({ error: 'Only waiting or failed posts can be cancelled.' });
+    job.status = 'cancelled';
+    job.updatedAt = new Date().toISOString();
+    saveState();
+    res.json(publicJob(job));
+  });
+
+  app.post('/api/schedule/:id/retry', (req, res) => {
+    const job = jobs.find((j) => j.id === req.params.id && j.sessionId === req.studio.id);
+    if (!job) return res.status(404).json({ error: 'Scheduled post not found.' });
+    if (job.status !== 'failed' && job.status !== 'cancelled')
+      return res.status(409).json({ error: 'Only cancelled or failed posts can be retried.' });
+    if (job.publishAttempted)
+      return res.status(409).json({ error: 'Publication may have reached Meta. Check each destination before creating a new job; automatic retry is disabled to prevent duplicate posts.' });
+    if (!active(req.studio))
+      return res.status(409).json({ error: 'Reconnect your Meta account before retrying.' });
+    job.status = 'scheduled';
+    job.attempts = 0;
+    job.lastError = null;
+    job.nextAttemptAt = Date.now();
+    job.updatedAt = new Date().toISOString();
+    saveState();
+    res.json(publicJob(job));
+  });
+
+  let processing = false;
+  async function processDueJobs() {
+    if (processing) return;
+    processing = true;
+    try {
+      const now = Date.now();
+      const due = jobs
+        .filter((j) => j.status === 'scheduled' && j.nextAttemptAt <= now)
+        .sort((a, b) => a.nextAttemptAt - b.nextAttemptAt);
+      for (const job of due) {
+        if (job.status !== 'scheduled') continue;
+        const s = sessions.get(job.sessionId),
+          p = s && s.pages.find((x) => x.id === job.pageId);
+        if (!ready || !p) {
+          job.status = 'failed';
+          job.lastError = 'Reconnect your Meta account to resume this scheduled post.';
+          job.updatedAt = new Date().toISOString();
+          notify(job.sessionId, 'error', job.lastError, job.id);
+          continue;
+        }
+        let bytes;
+        try {
+          bytes = fs.readFileSync(path.join(store.mediaDir, job.imageFile));
+        } catch {
+          job.status = 'failed';
+          job.lastError = 'The scheduled poster file is missing. Recreate the schedule.';
+          job.updatedAt = new Date().toISOString();
+          notify(job.sessionId, 'error', job.lastError, job.id);
+          continue;
+        }
+        job.status = 'publishing';
+        // Once a request is sent its outcome may be ambiguous (timeout, crash, or partial
+        // channel success). Never repeat it automatically without checking Meta first.
+        job.publishAttempted = true;
+        job.updatedAt = new Date().toISOString();
+        saveState();
+        const results = await sendToMeta(p, bytes, job.caption, job.platforms, job.title, s);
+        if (results.length && results.every((r) => r.ok)) {
+          job.status = 'published';
+          job.publishedAt = new Date().toISOString();
+          job.results = results;
+          job.lastError = null;
+          notify(
+            job.sessionId,
+            'success',
+            `Scheduled post published: ${job.title}`,
+            job.id,
+          );
+        } else {
+          job.attempts += 1;
+          job.results = results;
+          job.lastError =
+            results.find((r) => !r.ok)?.error || 'Meta did not confirm the scheduled post.';
+          job.status = 'failed';
+          job.lastError += ' Check each destination before creating another job; the outcome may be uncertain.';
+          notify(job.sessionId, 'error', `Scheduled post needs review: ${job.lastError}`, job.id);
+          job.updatedAt = new Date().toISOString();
+        }
+        saveState();
+      }
+    } finally {
+      processing = false;
+    }
+  }
+  for (const job of jobs) {
+    if (job.status === 'publishing') {
+      job.status = 'failed';
+      job.publishAttempted = true;
+      job.lastError = 'Server restarted during publication. Check each destination before creating another job; the outcome is unknown.';
+      job.updatedAt = new Date().toISOString();
+      notify(job.sessionId, 'error', job.lastError, job.id);
+    }
+  }
+  const scheduler = setInterval(processDueJobs, Math.max(1000, tickMs));
+  scheduler.unref();
+  processDueJobs();
+
   app.use('/api', (req, res) => res.status(404).json({ error: 'Unknown workspace endpoint.' }));
   app.use((err, req, res, next) => {
     if (res.headersSent) return next(err);

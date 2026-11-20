@@ -103,6 +103,16 @@ export const PLATES = {
   'panchangam-alt': 'The Sunlit Almanac',
   'nakshatra-alt': 'The Foil Star Map',
   'porutham-alt': 'The Terracotta Scales',
+  'birth-detail': 'The Palm-Leaf Natal Folio',
+  'marriage-detail': 'The Lotus Matching Lines',
+  'naming-detail': 'The Star Canopy Cradle',
+  'muhurtham-detail': 'The Linocut Calendar',
+  'bhava-detail': 'The Ceramic House Wheel',
+  'varga-detail': 'The Vellum Divisions',
+  'rasi-detail': 'The Embroidered Signs',
+  'panchangam-detail': 'The Hanging Almanac',
+  'nakshatra-detail': 'The Felt Star Chart',
+  'porutham-detail': 'The Seesaw Study',
 };
 
 // A second, deliberately different art direction for each service. Half of the designs use
@@ -119,6 +129,21 @@ export const ALT_PLATES = {
   panchangam: 'panchangam-alt',
   nakshatra: 'nakshatra-alt',
   porutham: 'porutham-alt',
+};
+
+// A third, independently illustrated direction per service, so no subject depends on a pair
+// of paintings. These are subject-specific studies, not recolours or crops of the others.
+export const DETAIL_PLATES = {
+  birth: 'birth-detail',
+  marriage: 'marriage-detail',
+  naming: 'naming-detail',
+  muhurtham: 'muhurtham-detail',
+  bhava: 'bhava-detail',
+  varga: 'varga-detail',
+  rasi: 'rasi-detail',
+  panchangam: 'panchangam-detail',
+  nakshatra: 'nakshatra-detail',
+  porutham: 'porutham-detail',
 };
 
 // These replacements were painted with the subject's own deity as the central figure.

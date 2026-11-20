@@ -1890,6 +1890,108 @@ textarea {
   color: #93868b;
   margin-top: 9px;
 }
+.publish-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.publish-mode button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #e2d9d2;
+  border-radius: 8px;
+  background: #fffdfa;
+  color: #6f5e66;
+  padding: 9px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.publish-mode button.selected {
+  border-color: #b98b53;
+  background: #f8efe3;
+  color: #59332c;
+  font-weight: 700;
+}
+.schedule-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed #dccfc3;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.schedule-jobs,
+.schedule-notifications {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-bottom: 12px;
+}
+.schedule-job {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0e9e2;
+}
+.schedule-job > span:nth-child(2) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.schedule-job small {
+  color: #8c7f83;
+  font-size: 11px;
+}
+.job-status {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 7px;
+  border-radius: 10px;
+  background: #f0e9e2;
+  color: #6f5e66;
+}
+.job-status.published,
+.job-status.success {
+  background: #e3f3e7;
+  color: #2d6640;
+}
+.job-status.scheduled,
+.job-status.publishing {
+  background: #fff1d8;
+  color: #8a5b15;
+}
+.job-status.failed,
+.job-status.error {
+  background: #fae3e1;
+  color: #9a3329;
+}
+.schedule-notifications p {
+  margin: 4px 0;
+  font-size: 11px;
+  color: #6f5e66;
+}
+.schedule-notifications p.success {
+  color: #2d6640;
+}
+.schedule-notifications p.warning {
+  color: #8a5b15;
+}
+.schedule-notifications p.error {
+  color: #9a3329;
+}
+.server-confirmation {
+  font-size: 11px;
+  color: #6f5e66;
+  padding: 8px;
+  background: #f8f5f1;
+  border-radius: 7px;
+}
 .publish-result {
   padding: 12px 0;
   border-bottom: 1px solid var(--line);

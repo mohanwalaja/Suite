@@ -440,3 +440,19 @@ test('an unavailable original logo cannot produce an unbranded download or post'
   expect(downloaded).toBe(false);
   expect(submitted).toBe(false);
 });
+
+test('publication modes distinguish a planner note from real server scheduling', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Publish post', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('group', { name: 'Publication mode' })).toBeVisible();
+  await expect(dialog.getByText(/schedule note is only a saved draft/i)).toBeVisible();
+  await dialog.getByRole('button', { name: 'Schedule', exact: true }).click();
+  await expect(dialog.getByLabel('Local date and time')).toBeVisible();
+  await expect(dialog.getByLabel('Timezone')).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: /Schedule publication|Connect Meta/ }),
+  ).toBeVisible();
+  await expect(dialog.getByText(/Server status for this poster/)).toHaveCount(0);
+});

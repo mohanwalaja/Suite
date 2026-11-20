@@ -3,6 +3,7 @@
 // manual choices and confirmed publications as separate events.
 
 const KEY = 'creative-history-v1';
+const JOURNAL = 'astrosivam:creative-event-v1:';
 const memory = new Map();
 const browserStorage = () => {
   try {
@@ -34,12 +35,40 @@ const write = (entries, storage) => {
   return entries;
 };
 
+const eventKey = (e) =>
+  `${e.subjectId}|${e.designId}|${e.source}|${e.day}|${e.composition || ''}`;
 export class CreativeHistoryManager {
   constructor(storage = null) {
     this.storage = storage;
+    this.listeners = new Set();
+    if (typeof window !== 'undefined' && window.addEventListener)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'astrosivam:' + KEY || e.key?.startsWith(JOURNAL) || e.key === null)
+          for (const fn of this.listeners) fn();
+      });
   }
   all() {
-    return read(this.storage);
+    const entries = read(this.storage);
+    const s = source(this.storage);
+    if (s && typeof s.key === 'function') {
+      try {
+        for (let i = 0; i < s.length; i++) {
+          const key = s.key(i);
+          if (key?.startsWith(JOURNAL)) {
+            const item = JSON.parse(s.getItem(key));
+            if (item && typeof item === 'object') entries.push(item);
+          }
+        }
+      } catch {
+        // Legacy history remains usable if browser storage is unavailable.
+      }
+    }
+    const unique = new Map(entries.map((entry) => [eventKey(entry), entry]));
+    return [...unique.values()].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  }
+  subscribe(fn) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
   }
   record(entry, date = new Date()) {
     const event = {
@@ -51,13 +80,31 @@ export class CreativeHistoryManager {
       designId: entry.designId ?? entry.id,
       designName: entry.designName || entry.name || '',
       composition: entry.composition || '',
+      artwork: entry.artwork || entry.setting || '',
       source: entry.source || 'generated',
       signature: entry.signature || null,
     };
     if (event.subjectId === undefined || event.subjectId === null || event.designId === undefined || event.designId === null || event.designId === '') return event;
-    const entries = [...this.all(), event];
-    // Keep a generous but bounded trail. The no-repeat rule needs the last 100 per subject.
-    write(entries.length > 8000 ? entries.slice(-8000) : entries, this.storage);
+    // One key per event prevents unrelated tabs from overwriting each other's history.
+    // Selection itself is not atomic; two tabs may still choose the same unused design.
+    const s = source(this.storage);
+    if (s && typeof s.key === 'function') {
+      try {
+        s.setItem(JOURNAL + encodeURIComponent(eventKey(event)), JSON.stringify(event));
+        // Preserve the legacy aggregate for existing readers; the journal remains
+        // authoritative if concurrent tabs race while updating this compatibility copy.
+        write(this.all(), this.storage);
+      } catch {
+        const entries = this.all();
+        if (!entries.some((e) => eventKey(e) === eventKey(event))) entries.push(event);
+        write(entries, this.storage);
+      }
+    } else {
+      const entries = this.all();
+      if (!entries.some((e) => eventKey(e) === eventKey(event))) entries.push(event);
+      write(entries, this.storage);
+    }
+    for (const fn of this.listeners) fn();
     return event;
   }
   forSubject(subjectId) {
@@ -79,6 +126,9 @@ export class CreativeHistoryManager {
   lastComposition(subjectId) {
     return this.recent(subjectId, 1)[0]?.composition || '';
   }
+  lastArtwork(subjectId) {
+    return this.recent(subjectId, 1)[0]?.artwork || '';
+  }
   stats() {
     const entries = this.all();
     return {
@@ -91,7 +141,17 @@ export class CreativeHistoryManager {
     };
   }
   reset() {
+    const s = source(this.storage);
+    if (s && typeof s.key === 'function') {
+      const keys = [];
+      for (let i = 0; i < s.length; i++) {
+        const key = s.key(i);
+        if (key?.startsWith(JOURNAL)) keys.push(key);
+      }
+      keys.forEach((key) => s.removeItem(key));
+    }
     write([], this.storage);
+    for (const fn of this.listeners) fn();
     return true;
   }
 }

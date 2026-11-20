@@ -21,7 +21,7 @@ import { imageSize } from 'image-size';
 import { sceneSvg } from '../src/art/illustration.js';
 import { DEITIES, deityTopics, paintings, paintingsOf, customDeity } from '../src/art/deities.js';
 import { occasionBrief } from '../src/art/briefs.js';
-import { ALT_PLATES, PLATES } from '../src/art/plates.js';
+import { ALT_PLATES, DETAIL_PLATES, PLATES } from '../src/art/plates.js';
 const digest = (x) => createHash('sha256').update(x).digest('hex');
 test('every subject has 100+ independently authored compositions, not recolours', () => {
   // The original palette and type libraries remain available and unchanged.
@@ -318,22 +318,31 @@ test('original painted plates are distinct assets wired into their own subjects'
     const size = imageSize(jpg);
     assert.equal(size.width, 1024, title);
     assert.equal(size.height, 1024, title);
-    const owner = Object.keys(ALT_PLATES).find((k) => ALT_PLATES[k] === id) || id;
+    const owner =
+      Object.keys(ALT_PLATES).find((k) => ALT_PLATES[k] === id) ||
+      Object.keys(DETAIL_PLATES).find((k) => DETAIL_PLATES[k] === id) ||
+      id;
     const topic = topics.find((t) => t.id === owner);
     assert.ok(topic, `${title} has no matching subject`);
     const models = modelsFor(topic);
     assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT);
-    const allowed = new Set([topic.id, ALT_PLATES[topic.id]].filter(Boolean));
+    const allowed = new Set(
+      [topic.id, ALT_PLATES[topic.id], DETAIL_PLATES[topic.id]].filter(Boolean),
+    );
     for (const m of models) {
       assert.ok(allowed.has(m.setting), `${topic.name} did not load a registered painted plate`);
       assert.equal(m.plate, true);
       assert.equal(m.medium, 'Painted scene');
     }
   }
-  for (const [base, alt] of Object.entries(ALT_PLATES)) {
+  for (const base of Object.keys(ALT_PLATES)) {
     const topic = topics.find((t) => t.id === base);
     const settings = new Set(modelsFor(topic).map((m) => m.setting));
-    assert.deepEqual([...settings].sort(), [base, alt].sort(), `${topic.name} offers both art styles`);
+    assert.deepEqual(
+      [...settings].sort(),
+      [base, ALT_PLATES[base], DETAIL_PLATES[base]].sort(),
+      `${topic.name} offers three distinct art styles`,
+    );
   }
   assert.ok(hashes.size >= 10);
 });

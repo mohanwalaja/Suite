@@ -257,19 +257,64 @@ function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
   // alternating centred/left hierarchies give each of the 150 designs a different shape.
   if (m.wordPoster) {
     trim(c, h, foil, false);
-    const centred = m.id % 2 === 0;
-    const x = centred ? 110 : 92,
-      width = centred ? 780 : 816;
-    rect(c, 66, h * 0.12, 868, h * 0.72, mid);
-    stroke(c, 78, h * 0.13, 844, h * 0.7, line, 1.2);
-    for (let i = 0; i < 4; i++) {
-      const yy = h * (0.16 + i * 0.16);
-      rule(c, 96, yy, centred ? 904 : 868, yy, rgba(foil, 0.16), 1);
+    const variant = (m.sequence || m.id) % 6;
+    let x = 110,
+      width = 780,
+      top = 0.25,
+      bottom = 0.73,
+      centred = true;
+    if (variant === 0) {
+      rect(c, 66, h * 0.12, 868, h * 0.72, mid);
+      stroke(c, 78, h * 0.13, 844, h * 0.7, line, 1.2);
+      for (let i = 0; i < 4; i++) rule(c, 96, h * (0.16 + i * 0.16), 904, h * (0.16 + i * 0.16), rgba(foil, 0.16), 1);
+    } else if (variant === 1) {
+      centred = false;
+      x = 86;
+      width = 560;
+      rect(c, 66, h * 0.14, 610, h * 0.7, mid);
+      stroke(c, 78, h * 0.15, 586, h * 0.68, line, 1.2);
+      rule(c, 700, h * 0.14, 700, h * 0.84, foil, 1.5);
+      for (let i = 0; i < 5; i++) lozenge(c, 790, h * (0.22 + i * 0.12), 7, i % 2 ? line : foil);
+    } else if (variant === 2) {
+      top = 0.19;
+      bottom = 0.6;
+      rect(c, 66, h * 0.11, 868, h * 0.54, mid);
+      stroke(c, 78, h * 0.12, 844, h * 0.63, line, 1.2);
+      rule(c, 96, h * 0.72, 904, h * 0.72, foil, 1.5);
+      ticks(c, 96, h * 0.76, 808, rgba(foil, 0.5));
+    } else if (variant === 3) {
+      disc(c, 500, h * 0.46, 392, mid, line);
+      disc(c, 500, h * 0.46, 370, null, rgba(foil, 0.5));
+      x = 210;
+      width = 580;
+      top = 0.28;
+      bottom = 0.64;
+      for (let i = 0; i < 12; i++) {
+        const a = (i * Math.PI) / 6;
+        lozenge(c, 500 + Math.cos(a) * 416, h * 0.46 + Math.sin(a) * 416, 5, foil);
+      }
+    } else if (variant === 4) {
+      centred = false;
+      x = 96;
+      width = 808;
+      rect(c, 66, h * 0.14, 424, h * 0.68, mid);
+      rect(c, 510, h * 0.14, 424, h * 0.68, mid);
+      stroke(c, 78, h * 0.15, 400, h * 0.66, line, 1.2);
+      stroke(c, 522, h * 0.15, 400, h * 0.66, line, 1.2);
+      rule(c, 500, h * 0.14, 500, h * 0.82, foil, 1.5);
+    } else {
+      rect(c, 150, h * 0.15, 700, h * 0.62, mid);
+      stroke(c, 162, h * 0.16, 676, h * 0.6, line, 1.2);
+      for (let i = 0; i < 6; i++) rule(c, 150 + i * 116, h * 0.15, 150, h * 0.15 + i * 96, rgba(foil, 0.22), 1);
+      x = 190;
+      width = 620;
+      top = 0.26;
+      bottom = 0.69;
     }
-    ticks(c, x, h * 0.78, width, rgba(foil, 0.5));
+    ticks(c, x, h * Math.min(bottom + 0.05, 0.82), width, rgba(foil, 0.5));
     lozenge(c, 104, h * 0.17, 5, foil);
     lozenge(c, 896, h * 0.17, 5, foil);
-    return box(x, h * 0.25, width, h * 0.73, 96, centred);
+    return box(x, h * top, width, h * bottom, 96, centred);
   }
   if (m.direction === 1) return creativePlate(c, h, m, palette, im, art, adjust, deityIm);
   // A supplied portrait can have any ratio. Never crop its face or place marketing text over it.

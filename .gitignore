@@ -7,3 +7,4 @@ runtime/
 .cache/
 test-results/
 playwright-report/
+.data/

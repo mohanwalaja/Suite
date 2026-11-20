@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   Image as ImageIcon,
@@ -26,6 +26,9 @@ import {
   CheckCircle2,
   CircleAlert,
   LockKeyhole,
+  CalendarClock,
+  RefreshCw,
+  Ban,
 } from 'lucide-react';
 import { Poster, Modal, MetaIcon } from './Shared';
 import { modelFor } from '../art/models.js';
@@ -514,9 +517,33 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
   const [busy, setBusy] = useState(false),
     [results, setResults] = useState(null),
     [error, setError] = useState('');
+  const [mode, setMode] = useState('now');
+  const [localTime, setLocalTime] = useState('');
+  const [timezone, setTimezone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  );
+  const [scheduled, setScheduled] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const key = useRef(uid());
   const copy = [design.caption.trim(), design.hashtags.trim()].filter(Boolean).join('\n\n');
   const success = results?.every((r) => r.ok);
+  async function refreshJobs() {
+    if (!meta.connected) return;
+    try {
+      const r = await api('/schedule');
+      setJobs(r.jobs);
+      setScheduled((current) => (current ? r.jobs.find((job) => job.id === current.id) || current : null));
+      setNotifications(r.notifications);
+    } catch {
+      // The dialog keeps its last known server state; it never invents a status.
+    }
+  }
+  useEffect(() => {
+    refreshJobs();
+    const t = setInterval(refreshJobs, 10000);
+    return () => clearInterval(t);
+  }, [meta.connected]);
   async function publish() {
     if (!meta.connected) {
       onConnect();
@@ -560,9 +587,77 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
       setBusy(false);
     }
   }
+  async function schedule() {
+    if (!meta.connected) {
+      onConnect();
+      return;
+    }
+    if (!channels.length) {
+      setError('Choose at least one channel.');
+      return;
+    }
+    if (!localTime) {
+      setError('Choose the local date and time for publication.');
+      return;
+    }
+    if (copy.length > 2200) {
+      setError('Shorten the caption and hashtags to 2,200 characters before scheduling.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const blob = await exportPoster(design);
+      const image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      const job = await api('/schedule', {
+        method: 'POST',
+        body: JSON.stringify({
+          image,
+          posterRevision: POSTER_REVISION,
+          caption: copy,
+          platforms: channels,
+          pageId: meta.account.id,
+          requestId: key.current,
+          title: design.topic.name,
+          localTime,
+          timezone,
+        }),
+      });
+      setScheduled(job);
+      await refreshJobs();
+      notify(`Server confirmed schedule ${job.status}: ${job.title}.`);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function jobAction(id, action) {
+    try {
+      const job = await api(`/schedule/${encodeURIComponent(id)}/${action}`, { method: 'POST', body: '{}' });
+      setScheduled(job);
+      await refreshJobs();
+      notify(`Publication job ${job.status}.`);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
   return (
     <Modal
-      title={results ? (success ? 'Post published' : 'Publishing results') : 'Publish your post'}
+      title={
+        scheduled
+          ? `Server status: ${scheduled.status}`
+          : results
+            ? success
+              ? 'Post published'
+              : 'Publishing results'
+            : 'Publish your post'
+      }
       eyebrow="SOCIAL PUBLISHING"
       onClose={() => !busy && onClose()}
     >
@@ -611,6 +706,26 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
                 </span>
               </span>
             </div>
+            <div className="publish-mode" role="group" aria-label="Publication mode">
+              <button
+                className={mode === 'now' ? 'selected' : ''}
+                disabled={busy}
+                onClick={() => setMode('now')}
+              >
+                <Send size={14} /> Now
+              </button>
+              <button
+                className={mode === 'schedule' ? 'selected' : ''}
+                disabled={busy}
+                onClick={() => setMode('schedule')}
+              >
+                <CalendarClock size={14} /> Schedule
+              </button>
+            </div>
+            <p className="publish-fineprint">
+              The Daily Planner’s schedule note is only a saved draft. This section creates a real
+              server-side publication job and reports the status Meta confirms.
+            </p>
             <div className="section-label">Post to</div>
             <div className="publish-channels">
               {['instagram', 'facebook'].map((ch) => {
@@ -653,6 +768,82 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
               </button>
             </div>
             <p className="publish-copy">{copy || 'No caption or hashtags.'}</p>
+            {mode === 'schedule' && (
+              <div className="schedule-fields">
+                <label className="field">
+                  <span>Local date and time</span>
+                  <input
+                    type="datetime-local"
+                    value={localTime}
+                    onChange={(e) => setLocalTime(e.target.value)}
+                  />
+                </label>
+                <label className="field">
+                  <span>Timezone</span>
+                  <input value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+                </label>
+              </div>
+            )}
+            {!!jobs.length && (
+              <div className="schedule-jobs">
+                <div className="section-label">
+                  Server-confirmed jobs
+                  <button className="small-tool" disabled={busy} onClick={refreshJobs}>
+                    <RefreshCw size={12} /> Refresh
+                  </button>
+                </div>
+                {jobs.slice(0, 8).map((j) => (
+                  <div className="schedule-job" key={j.id}>
+                    <span className={'job-status ' + j.status}>{j.status}</span>
+                    <span>
+                      <strong>{j.title}</strong>
+                      <small>
+                        {j.platforms.join(' · ')} · {new Date(j.dueAt).toLocaleString()} · attempt{' '}
+                        {j.attempts + (j.status === 'published' ? 1 : 0)}/{j.maxAttempts}
+                        {j.lastError ? ` · ${j.lastError}` : ''}
+                      </small>
+                    </span>
+                    {['scheduled', 'failed'].includes(j.status) && (
+                      <button
+                        className="icon-btn"
+                        title="Cancel job"
+                        aria-label="Cancel scheduled job"
+                        disabled={busy}
+                        onClick={() => jobAction(j.id, 'cancel')}
+                      >
+                        <Ban size={14} />
+                      </button>
+                    )}
+                    {j.retryAllowed && (
+                      <button
+                        className="icon-btn"
+                        title="Retry job"
+                        aria-label="Retry scheduled job"
+                        disabled={busy}
+                        onClick={() => jobAction(j.id, 'retry')}
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {!!notifications.length && (
+              <div className="schedule-notifications">
+                {notifications.slice(0, 4).map((n) => (
+                  <p key={n.id} className={n.level}>
+                    {n.text}
+                  </p>
+                ))}
+              </div>
+            )}
+            {scheduled && (
+              <p className="server-confirmation" role="status">
+                Server status for this poster: <strong>{scheduled.status}</strong>. No local claim is
+                shown until the server updates it.
+              </p>
+            )}
             {!meta.connected && (
               <div className="info-note">
                 <Link2 size={16} />
@@ -668,18 +859,26 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
               <button className="btn" disabled={busy} onClick={onDownload}>
                 <Download size={15} /> Download
               </button>
-              <button className="btn primary" disabled={busy || !channels.length} onClick={publish}>
+              <button
+                className="btn primary"
+                disabled={busy || !channels.length || (mode === 'schedule' && !!scheduled)}
+                onClick={mode === 'schedule' ? schedule : publish}
+              >
                 {busy ? (
                   <>
-                    <LoaderCircle size={15} className="spin" /> Publishing…
+                    <LoaderCircle size={15} className="spin" /> {mode === 'schedule' ? 'Scheduling…' : 'Publishing…'}
                   </>
-                ) : meta.connected ? (
+                ) : !meta.connected ? (
                   <>
-                    <Send size={15} /> Publish now
+                    <MetaIcon size={19} /> Connect Meta
+                  </>
+                ) : mode === 'schedule' ? (
+                  <>
+                    <CalendarClock size={15} /> Schedule publication
                   </>
                 ) : (
                   <>
-                    <MetaIcon size={19} /> Connect Meta
+                    <Send size={15} /> Publish now
                   </>
                 )}
               </button>

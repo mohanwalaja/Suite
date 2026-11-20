@@ -39,12 +39,14 @@ export class DailyRotationEngine {
     const { pool, exhausted } = this.candidates(topic, seedDate);
     if (!pool.length) return null;
     const previous = this.historyManager?.lastComposition(topic.id) || '';
+    const previousArt = this.historyManager?.lastArtwork?.(topic.id) || '';
     let list = options.directionId
       ? pool.filter((d) => d.definition?.directionId === options.directionId)
       : pool;
     if (!list.length) list = pool;
     const different = list.filter((d) => d.compositionId !== previous);
-    let pick = (different.length ? different : list)[0];
+    const differentArt = different.filter((d) => d.setting !== previousArt);
+    let pick = (differentArt.length ? differentArt : different.length ? different : list)[0];
     if (exhausted && !different.length) {
       // Never repeat an adjacent composition, even after a full cycle of the library.
       const alt = this.ordered(topic).find((d) => d.compositionId !== previous);

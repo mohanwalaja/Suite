@@ -1,0 +1,1721 @@
+{
+  "subjects": 172,
+  "rendered": 25800,
+  "compared": 1922100,
+  "exact": 175,
+  "near": 10703,
+  "worst": 1,
+  "threshold": 0.97,
+  "issues": [
+    {
+      "subject": "priest-busy",
+      "near": 1297,
+      "exact": 53,
+      "peak": 1,
+      "pair": [
+        0,
+        12
+      ]
+    },
+    {
+      "subject": "priest-team-ready",
+      "near": 1296,
+      "exact": 69,
+      "peak": 1,
+      "pair": [
+        0,
+        12
+      ]
+    },
+    {
+      "subject": "free-beta",
+      "near": 1257,
+      "exact": 44,
+      "peak": 1,
+      "pair": [
+        0,
+        42
+      ]
+    },
+    {
+      "subject": "fest-easter",
+      "near": 139,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        53,
+        144
+      ]
+    },
+    {
+      "subject": "fest-paryushana",
+      "near": 133,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        79,
+        108
+      ]
+    },
+    {
+      "subject": "deity-sita",
+      "near": 129,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        11,
+        31
+      ]
+    },
+    {
+      "subject": "deity-surya",
+      "near": 125,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        35,
+        38
+      ]
+    },
+    {
+      "subject": "deity-shiva",
+      "near": 121,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        33,
+        43
+      ]
+    },
+    {
+      "subject": "deity-andal",
+      "near": 116,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        8,
+        30
+      ]
+    },
+    {
+      "subject": "deity-rama",
+      "near": 115,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        18,
+        36
+      ]
+    },
+    {
+      "subject": "deity-agni",
+      "near": 114,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        11,
+        31
+      ]
+    },
+    {
+      "subject": "deity-vishnu",
+      "near": 111,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        4,
+        44
+      ]
+    },
+    {
+      "subject": "deity-indra",
+      "near": 111,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        19,
+        44
+      ]
+    },
+    {
+      "subject": "deity-kali",
+      "near": 110,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        4,
+        19
+      ]
+    },
+    {
+      "subject": "deity-radha",
+      "near": 108,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        11,
+        31
+      ]
+    },
+    {
+      "subject": "deity-ayyappa",
+      "near": 106,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        4,
+        44
+      ]
+    },
+    {
+      "subject": "deity-durga",
+      "near": 105,
+      "exact": 2,
+      "peak": 1,
+      "pair": [
+        1,
+        41
+      ]
+    },
+    {
+      "subject": "deity-murugan",
+      "near": 105,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        4,
+        44
+      ]
+    },
+    {
+      "subject": "deity-chandra",
+      "near": 104,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        37,
+        41
+      ]
+    },
+    {
+      "subject": "deity-shani",
+      "near": 103,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        1,
+        41
+      ]
+    },
+    {
+      "subject": "deity-naga",
+      "near": 102,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        11,
+        47
+      ]
+    },
+    {
+      "subject": "deity-dhanvantari",
+      "near": 102,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        95,
+        102
+      ]
+    },
+    {
+      "subject": "deity-jhulelal",
+      "near": 101,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        7,
+        31
+      ]
+    },
+    {
+      "subject": "deity-jagannath",
+      "near": 101,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        11,
+        47
+      ]
+    },
+    {
+      "subject": "deity-annapurna",
+      "near": 98,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        11,
+        17
+      ]
+    },
+    {
+      "subject": "deity-ganga",
+      "near": 97,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        18,
+        36
+      ]
+    },
+    {
+      "subject": "day-world-environment-day",
+      "near": 95,
+      "exact": 0,
+      "peak": 0.9961,
+      "pair": [
+        4,
+        8
+      ]
+    },
+    {
+      "subject": "deity-parvati",
+      "near": 94,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        11,
+        31
+      ]
+    },
+    {
+      "subject": "deity-hanuman",
+      "near": 92,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        37,
+        41
+      ]
+    },
+    {
+      "subject": "deity-meenakshi",
+      "near": 92,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        11,
+        17
+      ]
+    },
+    {
+      "subject": "deity-ganesha",
+      "near": 91,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        21,
+        37
+      ]
+    },
+    {
+      "subject": "deity-saraswati",
+      "near": 91,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        2,
+        35
+      ]
+    },
+    {
+      "subject": "day-earth-day",
+      "near": 91,
+      "exact": 0,
+      "peak": 0.9961,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "deity-narasimha",
+      "near": 89,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        77,
+        100
+      ]
+    },
+    {
+      "subject": "deity-brahma",
+      "near": 87,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        7,
+        47
+      ]
+    },
+    {
+      "subject": "deity-mariamman",
+      "near": 85,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        11,
+        31
+      ]
+    },
+    {
+      "subject": "deity-dattatreya",
+      "near": 85,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        1,
+        41
+      ]
+    },
+    {
+      "subject": "deity-venkateswara",
+      "near": 83,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        69,
+        89
+      ]
+    },
+    {
+      "subject": "deity-bhagavathy",
+      "near": 83,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        7,
+        31
+      ]
+    },
+    {
+      "subject": "deity-kamakhya",
+      "near": 81,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        11,
+        47
+      ]
+    },
+    {
+      "subject": "day-world-kindness-day",
+      "near": 76,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        4,
+        27
+      ]
+    },
+    {
+      "subject": "deity-lakshmi",
+      "near": 73,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        11,
+        47
+      ]
+    },
+    {
+      "subject": "day-international-day-of-peace",
+      "near": 73,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-world-water-day",
+      "near": 72,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "fest-pongal",
+      "near": 68,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        52,
+        105
+      ]
+    },
+    {
+      "subject": "fest-mahavir-jayanti",
+      "near": 63,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        69,
+        138
+      ]
+    },
+    {
+      "subject": "day-world-health-day",
+      "near": 62,
+      "exact": 0,
+      "peak": 0.9945,
+      "pair": [
+        27,
+        44
+      ]
+    },
+    {
+      "subject": "day-world-senior-citizens-day",
+      "near": 61,
+      "exact": 0,
+      "peak": 0.9938,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-republic-day",
+      "near": 60,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "day-national-youth-day",
+      "near": 57,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-doctors-day",
+      "near": 57,
+      "exact": 0,
+      "peak": 0.9961,
+      "pair": [
+        25,
+        43
+      ]
+    },
+    {
+      "subject": "fest-karam",
+      "near": 55,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        53,
+        144
+      ]
+    },
+    {
+      "subject": "day-labour-day",
+      "near": 53,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        21,
+        25
+      ]
+    },
+    {
+      "subject": "day-international-day-of-happiness",
+      "near": 52,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-women-s-day",
+      "near": 51,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        4,
+        5
+      ]
+    },
+    {
+      "subject": "day-valentine-s-day",
+      "near": 51,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "day-world-music-day",
+      "near": 50,
+      "exact": 0,
+      "peak": 0.9961,
+      "pair": [
+        48,
+        49
+      ]
+    },
+    {
+      "subject": "day-world-students-day",
+      "near": 49,
+      "exact": 0,
+      "peak": 0.9953,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-world-art-day",
+      "near": 48,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-friendship-day",
+      "near": 47,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "fest-losar",
+      "near": 47,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "day-mother-s-day",
+      "near": 45,
+      "exact": 0,
+      "peak": 0.9953,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-world-book-day",
+      "near": 44,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-national-science-day",
+      "near": 43,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-gandhi-jayanti",
+      "near": 43,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        48,
+        49
+      ]
+    },
+    {
+      "subject": "deity-krishna",
+      "near": 42,
+      "exact": 0,
+      "peak": 0.9992,
+      "pair": [
+        11,
+        41
+      ]
+    },
+    {
+      "subject": "day-national-girl-child-day",
+      "near": 42,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "day-international-men-s-day",
+      "near": 42,
+      "exact": 0,
+      "peak": 0.9914,
+      "pair": [
+        21,
+        25
+      ]
+    },
+    {
+      "subject": "day-international-yoga-day",
+      "near": 41,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-world-mental-health-day",
+      "near": 41,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        9,
+        26
+      ]
+    },
+    {
+      "subject": "day-constitution-day",
+      "near": 41,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        51,
+        136
+      ]
+    },
+    {
+      "subject": "fest-ugadi",
+      "near": 41,
+      "exact": 0,
+      "peak": 0.9898,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "day-grandparents-day",
+      "near": 40,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "day-national-education-day",
+      "near": 40,
+      "exact": 0,
+      "peak": 0.9945,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-international-mother-language-day",
+      "near": 39,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-international-day-of-families",
+      "near": 39,
+      "exact": 0,
+      "peak": 0.9938,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "day-international-nurses-day",
+      "near": 39,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "day-engineers-day",
+      "near": 38,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-children-s-day",
+      "near": 35,
+      "exact": 1,
+      "peak": 1,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-new-year-s-day",
+      "near": 35,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-international-literacy-day",
+      "near": 35,
+      "exact": 0,
+      "peak": 0.9977,
+      "pair": [
+        71,
+        146
+      ]
+    },
+    {
+      "subject": "day-world-heritage-day",
+      "near": 35,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        7,
+        47
+      ]
+    },
+    {
+      "subject": "day-national-technology-day",
+      "near": 35,
+      "exact": 0,
+      "peak": 0.9961,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "day-teachers-day",
+      "near": 35,
+      "exact": 0,
+      "peak": 0.9945,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "fest-nuakhai",
+      "near": 34,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        83,
+        134
+      ]
+    },
+    {
+      "subject": "day-national-sports-day",
+      "near": 33,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "day-national-handloom-day",
+      "near": 32,
+      "exact": 0,
+      "peak": 0.9969,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "day-father-s-day",
+      "near": 32,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "birth",
+      "near": 30,
+      "exact": 0,
+      "peak": 0.993,
+      "pair": [
+        63,
+        114
+      ]
+    },
+    {
+      "subject": "day-world-photography-day",
+      "near": 29,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "day-independence-day",
+      "near": 27,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        61,
+        106
+      ]
+    },
+    {
+      "subject": "fest-thaipusam",
+      "near": 25,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        127,
+        147
+      ]
+    },
+    {
+      "subject": "varga",
+      "near": 24,
+      "exact": 0,
+      "peak": 0.9938,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-onam",
+      "near": 24,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-holi",
+      "near": 22,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        125,
+        146
+      ]
+    },
+    {
+      "subject": "naming",
+      "near": 20,
+      "exact": 0,
+      "peak": 0.9953,
+      "pair": [
+        81,
+        116
+      ]
+    },
+    {
+      "subject": "fest-good-friday",
+      "near": 20,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-makar-sankranti",
+      "near": 19,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        62,
+        145
+      ]
+    },
+    {
+      "subject": "marriage",
+      "near": 19,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        63,
+        73
+      ]
+    },
+    {
+      "subject": "fest-chhath-puja",
+      "near": 18,
+      "exact": 0,
+      "peak": 0.9984,
+      "pair": [
+        62,
+        145
+      ]
+    },
+    {
+      "subject": "fest-gudi-padwa",
+      "near": 17,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        98,
+        149
+      ]
+    },
+    {
+      "subject": "fest-teej",
+      "near": 17,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        61,
+        71
+      ]
+    },
+    {
+      "subject": "fest-dussehra",
+      "near": 16,
+      "exact": 0,
+      "peak": 0.9898,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-magh-bihu",
+      "near": 16,
+      "exact": 0,
+      "peak": 0.9875,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-kali-puja",
+      "near": 16,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        86,
+        96
+      ]
+    },
+    {
+      "subject": "fest-baisakhi",
+      "near": 15,
+      "exact": 0,
+      "peak": 0.9812,
+      "pair": [
+        98,
+        149
+      ]
+    },
+    {
+      "subject": "fest-moatsu",
+      "near": 14,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        66,
+        96
+      ]
+    },
+    {
+      "subject": "fest-diwali",
+      "near": 13,
+      "exact": 0,
+      "peak": 0.9859,
+      "pair": [
+        92,
+        146
+      ]
+    },
+    {
+      "subject": "fest-eid-e-milad",
+      "near": 13,
+      "exact": 0,
+      "peak": 0.9859,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-vishu",
+      "near": 13,
+      "exact": 0,
+      "peak": 0.9836,
+      "pair": [
+        105,
+        125
+      ]
+    },
+    {
+      "subject": "fest-kaanum-pongal",
+      "near": 12,
+      "exact": 0,
+      "peak": 0.9922,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-lohri",
+      "near": 12,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-tamil-puthandu",
+      "near": 12,
+      "exact": 0,
+      "peak": 0.9836,
+      "pair": [
+        98,
+        149
+      ]
+    },
+    {
+      "subject": "porutham",
+      "near": 11,
+      "exact": 0,
+      "peak": 0.9953,
+      "pair": [
+        119,
+        149
+      ]
+    },
+    {
+      "subject": "fest-buddha-purnima",
+      "near": 11,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-bhogi",
+      "near": 11,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-christmas",
+      "near": 11,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-aadi-perukku",
+      "near": 11,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-ganesh-chaturthi",
+      "near": 9,
+      "exact": 0,
+      "peak": 0.9898,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-bonalu",
+      "near": 9,
+      "exact": 0,
+      "peak": 0.9898,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-thrissur-pooram",
+      "near": 9,
+      "exact": 0,
+      "peak": 0.9859,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-vasant-panchami",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9898,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-saraswati-puja",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "nakshatra",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-dhanteras",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        137,
+        147
+      ]
+    },
+    {
+      "subject": "fest-eid-al-fitr",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-wangala",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9789,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "rasi",
+      "near": 8,
+      "exact": 0,
+      "peak": 0.9773,
+      "pair": [
+        61,
+        91
+      ]
+    },
+    {
+      "subject": "muhurtham",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-rongali-bihu",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-ladakh-festival",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "fest-durga-puja",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-karva-chauth",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9859,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-bhai-dooj",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-raksha-bandhan",
+      "near": 7,
+      "exact": 0,
+      "peak": 0.9805,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-chapchar-kut",
+      "near": 6,
+      "exact": 0,
+      "peak": 0.9836,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-eid-al-adha",
+      "near": 6,
+      "exact": 0,
+      "peak": 0.9789,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-vishu-kani",
+      "near": 6,
+      "exact": 0,
+      "peak": 0.9781,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "bhava",
+      "near": 6,
+      "exact": 0,
+      "peak": 0.975,
+      "pair": [
+        58,
+        129
+      ]
+    },
+    {
+      "subject": "fest-govardhan-puja",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-thai-pongal",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9906,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-ayudha-puja",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-guru-purnima",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-maha-shivaratri",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9828,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-skanda-sashti",
+      "near": 5,
+      "exact": 0,
+      "peak": 0.9797,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-rama-navami",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-bandi-chhor-divas",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-karthigai-deepam",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-nag-panchami",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-ratha-yatra",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-parsi-new-year",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-gowri-habba",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-vaikunta-ekadashi",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-ambubachi-mela",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9844,
+      "pair": [
+        76,
+        96
+      ]
+    },
+    {
+      "subject": "fest-mattu-pongal",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9828,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-navaratri",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.982,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-hartalika-teej",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.982,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-hornbill-festival",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.982,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-aadi-pooram",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9812,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-guru-nanak-jayanti",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.9797,
+      "pair": [
+        61,
+        81
+      ]
+    },
+    {
+      "subject": "fest-margazhi",
+      "near": 4,
+      "exact": 0,
+      "peak": 0.975,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-sangai-festival",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9891,
+      "pair": [
+        62,
+        82
+      ]
+    },
+    {
+      "subject": "fest-attukal-pongala",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-hanuman-jayanti",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-bathukamma",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9852,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-cheti-chand",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9781,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-mahalaya",
+      "near": 3,
+      "exact": 0,
+      "peak": 0.9742,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-gangaur",
+      "near": 2,
+      "exact": 0,
+      "peak": 0.9867,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-krishna-janmashtami",
+      "near": 2,
+      "exact": 0,
+      "peak": 0.9828,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "panchangam",
+      "near": 1,
+      "exact": 0,
+      "peak": 0.9883,
+      "pair": [
+        131,
+        141
+      ]
+    },
+    {
+      "subject": "fest-varalakshmi-vratam",
+      "near": 1,
+      "exact": 0,
+      "peak": 0.9742,
+      "pair": [
+        131,
+        141
+      ]
+    }
+  ]
+}

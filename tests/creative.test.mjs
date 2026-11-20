@@ -133,3 +133,32 @@ test('quality control validates composition duplication, fonts, English copy and
   assert.deepEqual(exportSizeFor('story'), { width: 1080, height: 1920 });
   assert.equal(normalizeDesign({ ...design, format: 'square' }).format, 'portrait');
 });
+
+test('rotation history deduplicates cross-tab events and avoids the last artwork as well as composition', () => {
+  const storage = new Map();
+  const fakeStorage = {
+    getItem: (k) => storage.get(k) ?? null,
+    setItem: (k, v) => storage.set(k, v),
+  };
+  const history = new CreativeHistoryManager(fakeStorage);
+  const topic = topics[0];
+  for (let i = 0; i < 2; i++)
+    history.record({
+      subjectId: topic.id,
+      designId: modelsFor(topic)[0].id,
+      composition: 'atlas',
+      artwork: 'birth',
+      source: 'generated',
+    });
+  assert.equal(history.forSubject(topic.id).length, 1, 'two tabs selecting the same poster record once');
+  const engine = new DailyRotationEngine({
+    definitionsFor: modelsFor,
+    historyManager: history,
+    today: () => new Date('2026-02-03T12:00:00Z'),
+  });
+  const pick = engine.suggest(topic, new Date('2026-02-03T12:00:00Z'));
+  assert.ok(pick, 'an unused design is suggested');
+  assert.notEqual(pick.compositionId, 'atlas');
+  assert.notEqual(pick.setting, 'birth');
+  assert.equal(engine.remaining(topic), DESIGN_COUNT - 1);
+});

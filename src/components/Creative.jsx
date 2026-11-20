@@ -47,6 +47,7 @@ export function Planner({ design, onUse, onSavePlan, notify }) {
   );
   const copy = useMemo(() => (pick ? createDailyCopy(subject, pick, date) : null), [pick, subject, date]);
   const stats = useMemo(() => history.stats(), [historyTick]);
+  useEffect(() => history.subscribe(() => setHistoryTick((n) => n + 1)), []);
   const published = useMemo(() => {
     const posts = load('published', []);
     return posts.filter((p) => p.title?.includes(subject.name));
@@ -77,6 +78,7 @@ export function Planner({ design, onUse, onSavePlan, notify }) {
       designId: pick.id,
       designName: pick.name,
       composition: pick.compositionId,
+      artwork: pick.setting || '',
       source: 'generated',
       signature: perceptualSignature(document.querySelector('.planner-poster canvas')),
     });
@@ -101,6 +103,7 @@ export function Planner({ design, onUse, onSavePlan, notify }) {
       designId: pick.id,
       designName: pick.name,
       composition: pick.compositionId,
+      artwork: pick.setting || '',
       source: 'manual',
       signature: perceptualSignature(document.querySelector('.planner-poster canvas')),
     });
@@ -190,6 +193,10 @@ export function Planner({ design, onUse, onSavePlan, notify }) {
             </button>
           </div>
           <div className="planner-stats">
+            <div>
+              <strong>{DESIGN_COUNT - rotation.remaining(subject)}</strong>
+              <span>used designs for this subject</span>
+            </div>
             <div>
               <strong>{rotation.remaining(subject)}</strong>
               <span>unused designs for this subject</span>

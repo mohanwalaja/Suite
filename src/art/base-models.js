@@ -1,6 +1,6 @@
 import { DEITIES, paintings, paintingsOf } from './deities.js';
 import { occasionBrief } from './briefs.js';
-import { ALT_PLATES, DEITY_IN_PLATE, PLATES, plateFor } from './plates.js';
+import { ALT_PLATES, DEITY_IN_PLATE, DETAIL_PLATES, PLATES, plateFor } from './plates.js';
 // Model IDs remain stable for saved posters. Each row is an illustration brief, not a tint.
 // title | focal illustration (or @photograph) | composition | supporting element | optional setting
 const rows = (text) =>
@@ -719,8 +719,10 @@ export function modelsFor(topic) {
   // original asset, not a recolour or a renamed copy of the former photograph.
   if (plateId)
     for (const m of result) {
-      // Services alternate between the original plate and a distinct modern art direction.
-      const active = ALT_PLATES[topic.id] && m.id % 2 ? ALT_PLATES[topic.id] : plateId;
+      // Services rotate through three independently illustrated art directions.
+      const styles = [plateId, ALT_PLATES[topic.id], DETAIL_PLATES[topic.id]].filter(Boolean);
+      const styleIndex = m.id % styles.length;
+      const active = styles[styleIndex];
       // Keep the subject's own deity painting as a separate, selectable layer. The new
       // painted plate is the ground; the specific god picture is framed over it below.
       m.deityPicture = m.painting ? m.setting : null;
@@ -730,7 +732,7 @@ export function modelsFor(topic) {
       m.medium = 'Painted scene';
       m.detail = PLATES[active];
       m.deityInPlate = DEITY_IN_PLATE.has(active);
-      m.plateStyle = ALT_PLATES[topic.id] && m.id % 2 ? 'modern' : 'classic';
+      m.plateStyle = ['classic', 'modern', 'detail'][styleIndex] || 'classic';
       m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${active}:${m.deityPicture || ''}`;
     }
   if (topic.wordPoster)
