@@ -128,27 +128,26 @@ test('festival picker restricts the figures and keeps the festival, edited wish 
 }) => {
   await button(page, 'Festivals').click();
   await page.locator('.topic-select').click();
-  await page.getByLabel('Search topics').fill('Navaratri');
-  await page.getByRole('button', { name: /Navaratri/ }).click();
+  await page.getByLabel('Search topics').fill('Ambubachi Mela');
+  await page.getByRole('button', { name: /Ambubachi Mela/ }).click();
   await page.getByRole('tab', { name: 'Caption & tags' }).click();
-  await page.getByLabel('Post caption').fill('A Navaratri wish for our family.');
+  await page.getByLabel('Post caption').fill('An Ambubachi Mela wish for our family.');
   await page.getByRole('tab', { name: 'Design', exact: true }).click();
   await button(page, 'Use Forest jade palette').click();
   await page.getByRole('button', { name: /Choose a deity picture/ }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('heading')).toHaveText('Navaratri pictures');
-  await button(dialog, 'Durga').click();
+  await expect(dialog.getByRole('heading')).toHaveText('Ambubachi Mela pictures');
   await expect(dialog.getByRole('button', { name: /Use picture: .*Lakshmi/ })).toHaveCount(0);
-  await button(dialog, 'Use picture: Durga & the Lion').click();
+  await button(dialog, 'Use picture: Red Hibiscus at Kamakhya’s Shrine').click();
   await expect(page.locator('.canvas-mat canvas')).toHaveAttribute(
     'aria-label',
-    /Navaratri · Durga & the Lion/,
+    /Ambubachi Mela · Red Hibiscus at Kamakhya’s Shrine/,
   );
   await expect(button(page, 'Use Forest jade palette')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('tab', { name: 'Caption & tags' }).click();
-  await expect(page.getByLabel('Post caption')).toHaveValue('A Navaratri wish for our family.');
+  await expect(page.getByLabel('Post caption')).toHaveValue('An Ambubachi Mela wish for our family.');
   await page.getByRole('tab', { name: 'Design', exact: true }).click();
-  await button(page, 'Navaratri').click();
+  await button(page, 'Ambubachi Mela').click();
   await page.getByLabel('Search topics').fill('Eid al-Fitr');
   await page.getByRole('button', { name: /Eid al-Fitr Festival greetings/ }).click();
   await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toHaveCount(0);

@@ -53,6 +53,16 @@ export const PLATES = {
   'fest-diwali': 'The Diwali Lamps',
   'fest-pongal': 'The Pongal Harvest',
   'fest-holi': 'The Holi Colours',
+  'fest-ganesh-chaturthi': 'The Modak Offering',
+  'fest-navaratri': 'The Nine Lamps',
+  'fest-maha-shivaratri': 'The Moonlit Lingam',
+  'fest-makar-sankranti': 'The Kite Sunrise',
+  'fest-dussehra': 'The Victory Arch',
+  'fest-durga-puja': 'The Pandal Arch',
+  'fest-krishna-janmashtami': 'The Cradle Moon',
+  'fest-vishu': 'The Vishukkani Mirror',
+  'fest-chhath-puja': 'The Sun Offering',
+  'fest-karthigai-deepam': 'The Lamp Steps',
 };
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);
