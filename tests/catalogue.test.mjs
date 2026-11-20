@@ -12,14 +12,19 @@ import {
   createCopy,
   newDesign,
   matchesTopic,
+  WORD_POSTER_IDS,
 } from '../src/catalogue.js';
 import { modelsFor, picturesFor } from '../src/art/models.js';
+import { structuralSignature, assertStructurallyUnique } from '../src/creative/uniqueness.js';
+import { MIN_DESIGNS_PER_SUBJECT } from '../src/creative/registry.js';
 import { imageSize } from 'image-size';
 import { sceneSvg } from '../src/art/illustration.js';
 import { DEITIES, deityTopics, paintings, paintingsOf, customDeity } from '../src/art/deities.js';
 import { occasionBrief } from '../src/art/briefs.js';
+import { ALT_PLATES, PLATES } from '../src/art/plates.js';
 const digest = (x) => createHash('sha256').update(x).digest('hex');
-test('every subject has 50 unique style, palette, and font combinations', () => {
+test('every subject has 100+ independently authored compositions, not recolours', () => {
+  // The original palette and type libraries remain available and unchanged.
   assert.equal(styles.length, 50);
   for (const field of ['name', 'font', 'id'])
     assert.equal(new Set(styles.map((s) => s[field])).size, 50);
@@ -29,9 +34,9 @@ test('every subject has 50 unique style, palette, and font combinations', () => 
   for (const t of topics) {
     const models = modelsFor(t),
       drawn = new Set();
-    assert.equal(models.length, 50, t.name);
-    assert.equal(new Set(models.map((m) => m.name)).size, 50, t.name);
-    assert.equal(new Set(models.map((m) => m.colors.join())).size, 50, t.name);
+    assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT, t.name);
+    assert.equal(new Set(models.map((m) => m.name)).size, models.length, t.name);
+    assert.equal(new Set(models.map((m) => m.colors.join())).size, models.length, t.name);
     if (t.category !== 'Services') assert.ok(occasionBrief(t).curated, t.name);
     for (const m of models) {
       let art = '';
@@ -39,17 +44,45 @@ test('every subject has 50 unique style, palette, and font combinations', () => 
         if (!photoHashes.has(m.setting))
           photoHashes.set(m.setting, digest(readFileSync(`public/art/scenes/${m.setting}.jpg`)));
         art += photoHashes.get(m.setting);
+        // Each plated study frames its own large crop region of the source painting.
+        if (m.plate) art += `:crop-${m.id}`;
       }
-      if (m.hero) {
+      if (m.hero || m.companion) {
         const svg = sceneSvg(m);
         assert.doesNotMatch(svg, /undefined|NaN|\[object Object\]/, m.name);
         art += digest(svg);
       }
+      if (m.wordPoster) art += `:word-${m.id}`;
       assert.ok(art, m.name);
+      // Art direction is metadata, but it must be complete enough to author a poster.
+      for (const field of ['id', 'concept', 'artDirection', 'composition', 'background', 'illustration', 'typography', 'decorative', 'export'])
+        assert.ok(m.definition?.[field], `${t.name}: ${m.name} missing ${field}`);
+      assert.equal(m.definition.subject, t.name);
+      assert.equal(m.definition.category, t.category);
+      assert.deepEqual(m.definition.export.width, 1080);
       drawn.add(art);
     }
-    // Hash the actual illustration/scene, before any poster title, logo, font or palette is applied.
-    assert.equal(drawn.size, 50, t.name + ' must not just repaint the same background');
+    // Hash the actual illustration/scene, before title, logo, font or palette is applied.
+    assert.equal(drawn.size, models.length, t.name + ' must not repaint the same artwork');
+    // Independently verify that colour and font changes cannot masquerade as new designs.
+    assert.equal(assertStructurallyUnique(models, t.name), models.length);
+    const coloured = models.map((m) => ({
+      ...m,
+      direction: 0,
+      pass: 0,
+      local: null,
+      family: 'same',
+      hero: models[0].hero,
+      companion: models[0].companion,
+      setting: models[0].setting,
+      layout: 'same',
+      archetype: 'legacy',
+      arrangement: 'legacy',
+      typeSystem: 'classic',
+      ornament: 'x',
+      background: 'paper',
+    }));
+    assert.equal(new Set(coloured.map(structuralSignature)).size, 1, 'colour-only variants must collapse to one structural design');
   }
 });
 test('all 50 typefaces are bundled with local files and licenses', () => {
@@ -204,7 +237,19 @@ test('deity pictures are individually generated raster paintings, not recolored 
     ['Christmas', []],
     ['Father’s Day', []],
   ]) {
-    const pics = picturesFor(topics.find((t) => t.name === n));
+    const topic = topics.find((t) => t.name === n);
+    if (PLATES[topic.id]) {
+      // Plated festivals keep their specific deity paintings as a selectable, framed layer.
+      assert.ok(modelsFor(topic).every((m) => m.plate && !m.painting), n);
+      if (occasionBrief(topic).gods.length) {
+        const pics = picturesFor(topic);
+        assert.ok(pics.length >= 1, n);
+        assert.ok(pics.every((m) => m.deityPicture && m.figure), n);
+        assert.ok(modelsFor(topic).some((m) => m.deityPicture), n);
+      }
+      continue;
+    }
+    const pics = picturesFor(topic);
     assert.deepEqual([...new Set(pics.map((p) => p.figure))].sort(), gs.sort());
     assert.ok(
       pics.every(
@@ -222,4 +267,73 @@ test('deity pictures are individually generated raster paintings, not recolored 
     ['local-a', 'local-b'],
   );
   assert.ok(modelsFor(local).every((m) => m.local && !m.setting && !m.hero));
+});
+
+test('every god-related festival keeps its own deity picture in every poster', () => {
+  const festivals = topics.filter(
+    (t) => t.category === 'Festivals' && occasionBrief(t).gods.length > 0,
+  );
+  assert.ok(festivals.length >= 45);
+  for (const topic of festivals) {
+    const expected = occasionBrief(topic).gods.flatMap((g) => paintingsOf(g, { leadOnly: true }));
+    const models = modelsFor(topic),
+      pics = picturesFor(topic);
+    assert.ok(expected.length > 0, `${topic.name}: brief deities have paintings`);
+    assert.ok(
+      models.every((m) => (m.painting ? m.setting : m.deityPicture)),
+      `${topic.name}: every poster has a subject-specific deity picture`,
+    );
+    for (const key of expected)
+      assert.ok(
+        pics.some((m) => (m.deityPicture || m.setting) === key),
+        `${topic.name}: ${key} is selectable`,
+      );
+  }
+});
+
+test('word-led service notices use typography instead of borrowed artwork', () => {
+  for (const id of WORD_POSTER_IDS) {
+    const topic = topics.find((t) => t.id === id);
+    assert.ok(topic && topic.wordPoster, id);
+    const models = modelsFor(topic);
+    assert.equal(models.length, 150, id);
+    assert.ok(models.every((m) => m.wordPoster && !m.hero && !m.setting && !m.plate), id);
+    const copy = createCopy(topic);
+    assert.match(copy.caption, /free beta|priest is busy|priest team/i);
+    assert.match(copy.hashtags, /#VedicGuidance/);
+  }
+});
+
+test('original painted plates are distinct assets wired into their own subjects', () => {
+  const hashes = new Set();
+  for (const [id, title] of Object.entries(PLATES)) {
+    assert.ok(title.length > 5);
+    const jpg = readFileSync(`public/art/scenes/${id}.jpg`);
+    const webp = readFileSync(`public/art/thumbs/${id}.webp`);
+    const hash = digest(jpg);
+    assert.ok(!hashes.has(hash), `${title} cannot reuse another plate file`);
+    hashes.add(hash);
+    assert.ok(jpg.length > 20000, `${title} source artwork is missing`);
+    assert.ok(webp.length > 5000, `${title} thumbnail is missing`);
+    const size = imageSize(jpg);
+    assert.equal(size.width, 1024, title);
+    assert.equal(size.height, 1024, title);
+    const owner = Object.keys(ALT_PLATES).find((k) => ALT_PLATES[k] === id) || id;
+    const topic = topics.find((t) => t.id === owner);
+    assert.ok(topic, `${title} has no matching subject`);
+    const models = modelsFor(topic);
+    assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT);
+    const allowed = new Set([topic.id, ALT_PLATES[topic.id]].filter(Boolean));
+    for (const m of models) {
+      assert.ok(allowed.has(m.setting), `${topic.name} did not load a registered painted plate`);
+      assert.equal(m.plate, true);
+      assert.equal(m.medium, 'Painted scene');
+    }
+  }
+  for (const [base, alt] of Object.entries(ALT_PLATES)) {
+    const topic = topics.find((t) => t.id === base);
+    const settings = new Set(modelsFor(topic).map((m) => m.setting));
+    assert.deepEqual([...settings].sort(), [base, alt].sort(), `${topic.name} offers both art styles`);
+  }
+  assert.ok(hashes.size >= 10);
 });

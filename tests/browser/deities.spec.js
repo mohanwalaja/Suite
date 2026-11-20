@@ -115,7 +115,7 @@ test('phone directory, Hindi and alias search, change the actual picture and exp
   await button(page, 'Models').click();
   dialog = page.getByRole('dialog');
   const models = dialog.getByRole('button', { name: /^Apply .* model$/ });
-  await expect(models).toHaveCount(50);
+  await expect(models).toHaveCount(150);
   await models.last().scrollIntoViewIfNeeded();
   await expect(models.last().locator('canvas')).toHaveAttribute('data-rendered', 'true');
   await models.last().click();
@@ -127,28 +127,79 @@ test('festival picker restricts the figures and keeps the festival, edited wish 
   page,
 }) => {
   await button(page, 'Festivals').click();
+  await page.locator('.topic-select').click();
+  await page.getByLabel('Search topics').fill('Ambubachi Mela');
+  await page.getByRole('button', { name: /Ambubachi Mela/ }).click();
   await page.getByRole('tab', { name: 'Caption & tags' }).click();
-  await page.getByLabel('Post caption').fill('A Diwali wish for our family.');
+  await page.getByLabel('Post caption').fill('An Ambubachi Mela wish for our family.');
   await page.getByRole('tab', { name: 'Design', exact: true }).click();
   await button(page, 'Use Forest jade palette').click();
   await page.getByRole('button', { name: /Choose a deity picture/ }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('heading')).toHaveText('Diwali pictures');
-  await button(dialog, 'Ganesha').click();
+  await expect(dialog.getByRole('heading')).toHaveText('Ambubachi Mela pictures');
   await expect(dialog.getByRole('button', { name: /Use picture: .*Lakshmi/ })).toHaveCount(0);
-  await button(dialog, 'Use picture: Ganesha the Scribe').click();
+  await button(dialog, 'Use picture: Red Hibiscus at Kamakhya’s Shrine').click();
   await expect(page.locator('.canvas-mat canvas')).toHaveAttribute(
     'aria-label',
-    /Diwali · Ganesha the Scribe/,
+    /Ambubachi Mela · Red Hibiscus at Kamakhya’s Shrine/,
   );
   await expect(button(page, 'Use Forest jade palette')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('tab', { name: 'Caption & tags' }).click();
-  await expect(page.getByLabel('Post caption')).toHaveValue('A Diwali wish for our family.');
+  await expect(page.getByLabel('Post caption')).toHaveValue('An Ambubachi Mela wish for our family.');
   await page.getByRole('tab', { name: 'Design', exact: true }).click();
-  await button(page, 'Diwali').click();
+  await button(page, 'Ambubachi Mela').click();
   await page.getByLabel('Search topics').fill('Eid al-Fitr');
   await page.getByRole('button', { name: /Eid al-Fitr Festival greetings/ }).click();
   await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toHaveCount(0);
+});
+
+test('plated festivals keep their specific deity picture selectable and framed', async ({ page }) => {
+  await button(page, 'Festivals').click();
+  await page.locator('.topic-select').click();
+  await page.getByLabel('Search topics').fill('Ganesh Chaturthi');
+  await page.getByRole('button', { name: /Ganesh Chaturthi/ }).click();
+  await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toBeVisible();
+  await page.getByRole('button', { name: /Choose a deity picture/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading')).toHaveText('Ganesh Chaturthi pictures');
+  await expect(dialog.getByRole('button', { name: /Use picture:/ }).first()).toBeVisible();
+  await dialog.getByRole('button', { name: /Use picture:/ }).first().click();
+  await expect(page.locator('.canvas-mat canvas')).toHaveAttribute(
+    'aria-label',
+    /Ganesh Chaturthi/,
+  );
+  const paintings = await page.evaluate(async () => {
+    const { picturesFor } = await import('/src/art/models.js');
+    const { topics } = await import('/src/catalogue.js');
+    return picturesFor(topics.find((t) => t.id === 'fest-ganesh-chaturthi')).map(
+      (m) => m.deityPicture,
+    );
+  });
+  expect(paintings).toContain('chaturthi-ganesha');
+});
+
+test('new deity-centred plates keep Murugan, Sri Rama and Lakshmi as the specific pictures', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const found = await page.evaluate(async () => {
+    const { picturesFor } = await import('/src/art/models.js');
+    const { topics } = await import('/src/catalogue.js');
+    const expected = {
+      'fest-thaipusam': 'dev-murugan',
+      'fest-rama-navami': 'dev-rama',
+      'fest-akshaya-tritiya': 'diwali-lakshmi',
+    };
+    return Object.fromEntries(
+      Object.entries(expected).map(([id, picture]) => [
+        id,
+        picturesFor(topics.find((t) => t.id === id)).map((m) => m.deityPicture),
+      ]),
+    );
+  });
+  expect(found['fest-thaipusam']).toContain('dev-murugan');
+  expect(found['fest-rama-navami']).toContain('dev-rama');
+  expect(found['fest-akshaya-tritiya']).toContain('diwali-lakshmi');
 });
 
 test('a regional deity accepts multiple local pictures and a saved draft uses the selected one after reload', async ({

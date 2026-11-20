@@ -82,6 +82,11 @@ export function Library({ drafts, onOpen, onNew, onDelete }) {
                 </small>
                 <h3>{d.design.topic.name}</h3>
                 <p>{modelFor(d.design.topic, d.design.styleId).name}</p>
+                {d.design.scheduledAt && (
+                  <small className="scheduled-note">
+                    Planned {new Date(d.design.scheduledAt).toLocaleString()}
+                  </small>
+                )}
                 <div className="draft-bottom">
                   <button className="text-btn" onClick={() => onOpen(d)}>
                     Edit poster <ArrowRight size={13} />

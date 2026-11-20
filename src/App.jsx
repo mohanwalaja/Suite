@@ -21,6 +21,7 @@ import {
   Download,
   CheckCircle2,
   ArrowRight,
+  CalendarDays,
 } from 'lucide-react';
 import { MetaIcon, Modal, Poster } from './components/Shared';
 import { DeityLibrary } from './components/DeityPictures';
@@ -34,11 +35,16 @@ import {
   SetupGuide,
   PublishDialog,
 } from './components/Workspace';
-import { modelFor } from './art/models.js';
+import { modelFor, modelsFor } from './art/models.js';
 import { styles, fonts, topics, newDesign, createCopy, withPicture } from './catalogue';
 import { BRAND, PORTRAIT, normalizeDesign } from '../shared/poster-spec.js';
 import { exportPoster, download } from './poster';
 import { load, store, api, uid } from './storage';
+import { Planner } from './components/Creative.jsx';
+import { qualityReport } from './creative/quality.js';
+import { perceptualSignature } from './creative/uniqueness.js';
+import { history as creativeHistory } from './creative/history.js';
+import { rotation } from './creative/rotation.js';
 const pages = {
   studio: {
     name: 'Poster Studio',
@@ -51,6 +57,12 @@ const pages = {
     desc: 'Your saved posters, ready for their next chapter.',
     icon: Images,
     kicker: 'YOUR COLLECTION',
+  },
+  planner: {
+    name: 'Daily Planner',
+    desc: 'A fresh, subject-aware creative direction for every day.',
+    icon: CalendarDays,
+    kicker: 'CREATIVE PLANNING',
   },
   history: {
     name: 'Publish History',
@@ -75,9 +87,14 @@ const getPage = () =>
   pages[window.location.hash.slice(1)] ? window.location.hash.slice(1) : 'studio';
 function storedDesign() {
   const d = load('current', null);
-  return d?.topic?.name && styles[d.styleId] && typeof d.caption === 'string'
-    ? normalizeDesign(d)
-    : newDesign();
+  if (!d?.topic?.name || !Number.isInteger(d.styleId) || d.styleId < 0 || typeof d.caption !== 'string') return newDesign();
+  try {
+    const count = modelsFor(d.topic).length;
+    return d.styleId < count ? normalizeDesign(d) : newDesign();
+  } catch {
+    // A personal collection whose device pictures were removed cannot be restored.
+    return newDesign();
+  }
 }
 function storedDrafts() {
   const previous = load('drafts', []);
@@ -172,7 +189,7 @@ function Sidebar({ page, navigate, open, onClose, onHelp, drafts }) {
         <div className="side-rule" />
         <div className="nav-group">
           <div className="nav-heading">STUDIO</div>
-          {['studio', 'library', 'history'].map(nav)}
+          {['studio', 'planner', 'library', 'history'].map(nav)}
         </div>
         <div className="nav-group second">
           <div className="nav-heading">WORKSPACE</div>
@@ -212,6 +229,11 @@ export default function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [quality, setQuality] = useState(null);
+  const [undoCount, setUndoCount] = useState(0);
+  const [redoCount, setRedoCount] = useState(0);
+  const undoStack = useRef([]);
+  const redoStack = useRef([]);
   const [meta, setMeta] = useState({ configured: false, connected: false, pages: [] });
   const toastTimer = useRef();
   const mainRef = useRef(null);
@@ -310,17 +332,63 @@ export default function App() {
       })
       .catch(() => {});
   }, [page]);
-  const patch = useCallback((obj) => setDesign((d) => ({ ...d, ...obj })), []);
+  const currentSignature = () => {
+    try {
+      return perceptualSignature(document.querySelector('.canvas-mat canvas'));
+    } catch {
+      return null;
+    }
+  };
+  const patch = useCallback(
+    (obj, options = {}) => {
+      if (!options.silent) {
+        undoStack.current = [...undoStack.current.slice(-49), design];
+        redoStack.current = [];
+        setUndoCount(undoStack.current.length);
+        setRedoCount(0);
+      }
+      setDesign((d) => ({ ...d, ...obj }));
+    },
+    [design],
+  );
+  const undo = useCallback(() => {
+    const previous = undoStack.current.pop();
+    if (!previous) return;
+    redoStack.current = [...redoStack.current, design];
+    setUndoCount(undoStack.current.length);
+    setRedoCount(redoStack.current.length);
+    setDesign(previous);
+  }, [design]);
+  const redo = useCallback(() => {
+    const next = redoStack.current.pop();
+    if (!next) return;
+    undoStack.current = [...undoStack.current, design];
+    setUndoCount(undoStack.current.length);
+    setRedoCount(redoStack.current.length);
+    setDesign(next);
+  }, [design]);
+  useEffect(() => {
+    if (page !== 'studio') return;
+    const key = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z') return;
+      e.preventDefault();
+      if (e.shiftKey) redo(); else undo();
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, [page, undo, redo]);
   function pickTopic(t) {
     if (t.id !== design.topic.id)
       patch({
         topic: t,
         styleId: 0,
-        font: design.font === fonts[design.styleId] ? fonts[0] : design.font,
+        font: design.font === fonts[design.styleId % fonts.length] ? fonts[0] : design.font,
         headline: undefined,
         tagline: undefined,
+        adjustments: {},
         ...createCopy(t),
       });
+    setQuality(null);
     setModal(null);
   }
   function applyPicture(t, m) {
@@ -338,12 +406,44 @@ export default function App() {
     return true;
   }
   function pickStyle(s) {
-    if (s.id !== design.styleId) patch({ styleId: s.id, font: fonts[s.id], palette: -1 });
+    if (s.id !== design.styleId) {
+      patch({ styleId: s.id, font: fonts[s.id % fonts.length], palette: -1, adjustments: {}, quality: undefined });
+      creativeHistory.record({ subjectId: design.topic.id, subject: design.topic.name, designId: s.id, designName: s.name, composition: s.compositionId, source: 'manual', signature: currentSignature() });
+      setQuality(null);
+    }
     setModal(null);
   }
   function newPoster() {
-    setDesign(newDesign());
+    const next = newDesign();
+    creativeHistory.record({ subjectId: next.topic.id, subject: next.topic.name, designId: next.styleId, designName: modelFor(next.topic, next.styleId).name, composition: 'legacy', source: 'generated', signature: currentSignature() });
+    setDesign(next);
+    setQuality(null);
     navigate('studio');
+  }
+  function duplicateDesign() {
+    const copy = { ...design, draftId: null };
+    const id = uid();
+    const rec = { id, design: { ...copy, draftId: id }, savedAt: new Date().toISOString() };
+    const next = [rec, ...drafts];
+    if (persist('drafts', next)) {
+      setDrafts(next);
+      setDesign(rec.design);
+      notify('A duplicate draft was saved to your Content Library.');
+    }
+  }
+  async function runQuality() {
+    const canvas = document.querySelector('.canvas-mat canvas');
+    try {
+      const previousSignatures = creativeHistory
+        .forSubject(design.topic.id)
+        .map((e) => e.signature)
+        .filter(Boolean);
+      const report = await qualityReport(design, canvas, { previousSignatures });
+      setQuality(report);
+      notify(report.ok ? 'This poster is ready to export.' : 'Quality review found items to check.');
+    } catch (e) {
+      notify(e.message || 'The quality check could not be completed.');
+    }
   }
   function saveDraft() {
     const id = design.draftId || uid();
@@ -363,10 +463,19 @@ export default function App() {
     if (downloading) return;
     setDownloading(true);
     try {
-      const blob = await exportPoster(design, 'image/png');
+      const canvas = document.querySelector('.canvas-mat canvas');
+      const report = await qualityReport(design, canvas);
+      setQuality(report);
+      if (!report.ok) {
+        notify(`Export paused: ${report.problems[0]?.message || 'review the quality report.'}`);
+        return;
+      }
+      const placement = design.exportPlacement || 'portrait';
+      const size = placement === 'portrait' ? '' : `-${placement}`;
+      const blob = await exportPoster(design, 'image/png', 0.94, placement);
       download(
         blob,
-        `ASTRO-SIVAM-${design.topic.name.replace(/[^\p{L}\p{N}]+/gu, '-')}-${modelFor(design.topic, design.styleId).name.replaceAll(' ', '-')}.png`,
+        `ASTRO-SIVAM-${design.topic.name.replace(/[^\p{L}\p{N}]+/gu, '-')}-${modelFor(design.topic, design.styleId).name.replaceAll(' ', '-')}${size}.png`,
       );
       notify('Your high-resolution poster is ready to download.');
     } catch (e) {
@@ -379,6 +488,7 @@ export default function App() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const publishSuccess = (posts) => {
     if (!posts.length) return;
+    creativeHistory.record({ subjectId: design.topic.id, subject: design.topic.name, designId: design.styleId, designName: modelFor(design.topic, design.styleId).name, composition: modelFor(design.topic, design.styleId).compositionId, source: 'published', signature: currentSignature() });
     const unique = new Map([...posts, ...history].map((p) => [p.channel + p.id, p]));
     const next = [...unique.values()];
     setHistory(next);
@@ -489,6 +599,36 @@ export default function App() {
               onExpand={() => setModal('preview')}
               onDownload={exportImage}
               downloading={downloading}
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={undoCount > 0}
+              canRedo={redoCount > 0}
+              onDuplicate={duplicateDesign}
+              onQuality={runQuality}
+              quality={quality}
+            />
+          )}
+          {page === 'planner' && (
+            <Planner
+              design={design}
+              notify={notify}
+              onSavePlan={(next) => {
+                const id = uid();
+                const record = { id, design: { ...next, draftId: id }, savedAt: new Date().toISOString() };
+                const nextDrafts = [record, ...drafts];
+                if (persist('drafts', nextDrafts)) {
+                  setDrafts(nextDrafts);
+                  notify('Planned poster saved with its schedule note.', {
+                    label: 'View',
+                    onClick: () => navigate('library'),
+                  });
+                }
+              }}
+              onUse={(next) => {
+                setDesign(next);
+                setQuality(null);
+                navigate('studio');
+              }}
             />
           )}
           {page === 'library' && (

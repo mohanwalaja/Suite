@@ -63,17 +63,7 @@ export function Poster({ design, small = false, className = '' }) {
     return () => {
       alive = false;
     };
-  }, [
-    design.topic,
-    design.headline,
-    design.tagline,
-    design.styleId,
-    design.font,
-    design.palette,
-    design.format,
-    small,
-    near,
-  ]);
+  }, [design, small, near]);
   return (
     <>
       <canvas
@@ -187,7 +177,7 @@ export function SelectField({ label, value, onChange, children, icon: Icon, aria
   );
 }
 export function ModelCard({ model: s, design, onClick, selected = false }) {
-  const d = selected ? design : { ...design, styleId: s.id, font: fonts[s.id], palette: -1 };
+  const d = selected ? design : { ...design, styleId: s.id, font: fonts[s.id % fonts.length], palette: -1 };
   const fmt = formatFor(d.format);
   return (
     <button

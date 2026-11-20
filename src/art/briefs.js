@@ -14,7 +14,7 @@ Holi|Krishna & the colors|Krishna,Radha|color-bowls,water-spray,flute,petals,dru
 Navaratri|Nine nights of Devi|Durga,Lakshmi,Saraswati|deepam,lotus,bangles,veena,kalash,garland,drum,kumkum|navaratri-devi
 Durga Puja|Durga in the pandal|Durga|drum,conches,garland,lotus,kalash,doorway,deepam,kumkum|navaratri-devi
 Dussehra|Vijayadashami procession|Rama,Durga|chariot,doorway,garland,toran,conches,deepam,lotus,bells
-Onam|Mahabali’s homecoming|Mahabali|pookalam,boat,grain,basket,garland,palm-fan,deepam,lotus-pond
+Onam|Mahabali’s homecoming|Mahabali|pookalam,boat,grain,basket,garland,palm-fan,deepam,lotus-pond|mahabali-onam
 Maha Shivaratri|The night of Shiva|Shiva|lingam,moon,drum,harvest-bull,deepam,bells,olive-branch,doorway|shivaratri-shiva
 Makar Sankranti|Surya & the sky of kites|Surya|kite,sun,sugarcane,spool,grain,basket,horizon,bunting
 Krishna Janmashtami|Krishna in Vrindavan|Krishna|flute,butter-pot,peacock-feather,cradle,footprints,garlands,lotus,moon|janmashtami-krishna
@@ -43,7 +43,7 @@ Ayudha Puja|Blessings for our tools|Saraswati|ruler,book,veena,pencils,stylus,ga
 Varalakshmi Vratam|Varalakshmi’s blessings|Lakshmi|kalash,lotus,coins,garland,bangles,deepam,toran,kumkum|diwali-lakshmi
 Aadi Perukku|Gifts of the river||boat,lotus-pond,drop,grain,basket,deepam,garland,sprout
 Mahavir Jayanti|A moment of ahimsa||olive-branch,lotus,book,hands,deepam,sprout,wreath,horizon
-Buddha Purnima|Under the Bodhi tree|Buddha|bodhi-leaf,moon,lotus,deepam,book,lotus-pond,olive-branch,horizon
+Buddha Purnima|Under the Bodhi tree|Buddha|bodhi-leaf,moon,lotus,deepam,book,lotus-pond,olive-branch,horizon|buddha-purnima
 Guru Nanak Jayanti|Light & service||book,deepam,hands,baby-bowl,garland,letters,lantern,horizon
 Eid al-Fitr|Crescent & lantern||lantern,star-moon,archway,dates,stars,letters,rosettes,moon
 Eid al-Adha|Generosity at Eid||archway,lantern,star-moon,date-palm,baby-bowl,letters,stars,rosettes

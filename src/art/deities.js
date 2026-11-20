@@ -95,6 +95,8 @@ export const paintings = {
   'bhagavathy-pongala': ['Pongala for Attukal Bhagavathy', 'Bhagavathy', 'wine', 'whole'],
   'kamakhya-nilachal': ['Red Hibiscus at Kamakhya’s Shrine', 'Kamakhya', 'wine', 'whole'],
   'jhulelal-indus': ['Jhulelal on the Indus', 'Jhulelal', 'cobalt', 'whole'],
+  'mahabali-onam': ['Mahabali’s Homecoming', 'Mahabali', 'moss', 'whole'],
+  'buddha-purnima': ['The Buddha at Bodh Gaya', 'Buddha', 'night', 'whole'],
   'jagannath-puri': ['Jagannath on Nandighosha', 'Jagannath', 'clay', 'whole'],
   'narasimha-prahlada': ['Narasimha Blesses Prahlada', 'Narasimha', 'sand', 'whole'],
   'brahma-lotus': ['Brahma on the Cosmic Lotus', 'Brahma', 'violet', 'whole'],
