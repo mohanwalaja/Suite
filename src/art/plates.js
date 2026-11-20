@@ -87,6 +87,12 @@ export const PLATES = {
   'fest-thai-pongal': 'The Sun Chariot',
   'fest-mattu-pongal': 'The Harvest Bull',
   'fest-ratha-yatra': 'The Jagannath Chariot',
+  'fest-teej': 'The Monsoon Vow',
+  'fest-gowri-habba': 'The Turmeric Gauri',
+  'fest-kali-puja': 'The Lamp Night',
+  'fest-margazhi': 'The Jasmine Garden',
+  'fest-cheti-chand': 'The River Guardian',
+  'fest-ambubachi-mela': 'The Sacred Spring',
 };
 
 // These replacements were painted with the subject's own deity as the central figure.
@@ -117,6 +123,12 @@ export const DEITY_IN_PLATE = new Set([
   'fest-thai-pongal',
   'fest-mattu-pongal',
   'fest-ratha-yatra',
+  'fest-teej',
+  'fest-gowri-habba',
+  'fest-kali-puja',
+  'fest-margazhi',
+  'fest-cheti-chand',
+  'fest-ambubachi-mela',
 ]);
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);
