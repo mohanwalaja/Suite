@@ -247,7 +247,7 @@ function deityVignette(c, im, x, y, size, foil) {
   c.stroke();
 }
 
-export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
+function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
   const [base, foil, ink] = palette.colors;
   const tint = mix(base, ink, 0.07),
     mid = mix(base, foil, 0.15),
@@ -274,7 +274,8 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null)
   }
   if (m.painting && m.layout !== 'cover') return paintingPlate(c, h, m, palette.colors, im, art);
   const stacked = m.layout === 'window' || m.layout === 'ledger' || m.layout === 'stationery';
-  const bleed = im && (m.layout === 'cover' || m.hero || m.setting === 'birth-astrologer');
+  const bleed =
+    im && (m.layout === 'cover' || m.hero || m.setting === 'birth-astrologer' || m.plate);
   if (bleed) {
     if (m.plate) cropPlate(c, im, 0, 0, 1000, h, m);
     else cover(c, im, 0, 0, 1000, h, 0.88);
@@ -300,15 +301,6 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null)
       contain(c, art, -231, -231, 462, 462);
       c.restore();
     }
-    if (m.plate && m.deityPicture && deityIm)
-      deityVignette(
-        c,
-        deityIm,
-        596,
-        h * 0.15,
-        Math.min(m.deityInPlate ? 210 : 380, h * (m.deityInPlate ? 0.17 : 0.31)),
-        foil,
-      );
     return box(65, h * 0.29, art ? 440 : 463, h * 0.826, 145);
   }
   trim(c, h, foil, false);
@@ -443,6 +435,25 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null)
     ticks(c, x - 5, cy + w / 2 + 18, w + 10, line);
   }
   return box(65, h * 0.266, 418, h * 0.829, 135);
+}
+
+// Every plated devotional poster carries the festival's own deity picture, regardless of
+// which of the ten composition engines drew the sheet. The vignette is applied last so it
+// is never buried under paper texture, ornament or the plate crop.
+export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
+  const result = paintArtBase(c, h, m, palette, im, art, adjust, deityIm);
+  if (m.plate && m.deityPicture && deityIm) {
+    const foil = palette.colors[1];
+    deityVignette(
+      c,
+      deityIm,
+      596,
+      h * 0.15,
+      Math.min(m.deityInPlate ? 210 : 380, h * (m.deityInPlate ? 0.17 : 0.31)),
+      foil,
+    );
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -655,10 +666,6 @@ function creativePlate(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
         rule(c, area.x + 12, area.y + (area.h * i) / 5, area.x + area.w - 12, area.y + (area.h * i) / 5, rgba(foil, 0.25), 1);
     }
   });
-  if (m.plate && m.deityPicture && deityIm) {
-    const size = Math.min(area.w, area.h) * (m.deityInPlate ? 0.34 : 0.72);
-    deityVignette(c, deityIm, area.x + area.w - size - 16, area.y + 16, size, foil);
-  }
   if (inset && art) {
     rect(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, matte);
     stroke(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, rgba(foil, 0.5), 1);

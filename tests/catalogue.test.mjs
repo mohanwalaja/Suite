@@ -267,6 +267,28 @@ test('deity pictures are individually generated raster paintings, not recolored 
   assert.ok(modelsFor(local).every((m) => m.local && !m.setting && !m.hero));
 });
 
+test('every god-related festival keeps its own deity picture in every poster', () => {
+  const festivals = topics.filter(
+    (t) => t.category === 'Festivals' && occasionBrief(t).gods.length > 0,
+  );
+  assert.ok(festivals.length >= 45);
+  for (const topic of festivals) {
+    const expected = occasionBrief(topic).gods.flatMap((g) => paintingsOf(g, { leadOnly: true }));
+    const models = modelsFor(topic),
+      pics = picturesFor(topic);
+    assert.ok(expected.length > 0, `${topic.name}: brief deities have paintings`);
+    assert.ok(
+      models.every((m) => (m.painting ? m.setting : m.deityPicture)),
+      `${topic.name}: every poster has a subject-specific deity picture`,
+    );
+    for (const key of expected)
+      assert.ok(
+        pics.some((m) => (m.deityPicture || m.setting) === key),
+        `${topic.name}: ${key} is selectable`,
+      );
+  }
+});
+
 test('original painted plates are distinct assets wired into their own subjects', () => {
   const hashes = new Set();
   for (const [id, title] of Object.entries(PLATES)) {
