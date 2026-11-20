@@ -12,6 +12,7 @@ import {
   createCopy,
   newDesign,
   matchesTopic,
+  WORD_POSTER_IDS,
 } from '../src/catalogue.js';
 import { modelsFor, picturesFor } from '../src/art/models.js';
 import { structuralSignature, assertStructurallyUnique } from '../src/creative/uniqueness.js';
@@ -20,7 +21,7 @@ import { imageSize } from 'image-size';
 import { sceneSvg } from '../src/art/illustration.js';
 import { DEITIES, deityTopics, paintings, paintingsOf, customDeity } from '../src/art/deities.js';
 import { occasionBrief } from '../src/art/briefs.js';
-import { PLATES } from '../src/art/plates.js';
+import { ALT_PLATES, PLATES } from '../src/art/plates.js';
 const digest = (x) => createHash('sha256').update(x).digest('hex');
 test('every subject has 100+ independently authored compositions, not recolours', () => {
   // The original palette and type libraries remain available and unchanged.
@@ -51,6 +52,7 @@ test('every subject has 100+ independently authored compositions, not recolours'
         assert.doesNotMatch(svg, /undefined|NaN|\[object Object\]/, m.name);
         art += digest(svg);
       }
+      if (m.wordPoster) art += `:word-${m.id}`;
       assert.ok(art, m.name);
       // Art direction is metadata, but it must be complete enough to author a poster.
       for (const field of ['id', 'concept', 'artDirection', 'composition', 'background', 'illustration', 'typography', 'decorative', 'export'])
@@ -289,6 +291,19 @@ test('every god-related festival keeps its own deity picture in every poster', (
   }
 });
 
+test('word-led service notices use typography instead of borrowed artwork', () => {
+  for (const id of WORD_POSTER_IDS) {
+    const topic = topics.find((t) => t.id === id);
+    assert.ok(topic && topic.wordPoster, id);
+    const models = modelsFor(topic);
+    assert.equal(models.length, 150, id);
+    assert.ok(models.every((m) => m.wordPoster && !m.hero && !m.setting && !m.plate), id);
+    const copy = createCopy(topic);
+    assert.match(copy.caption, /free beta|priest is busy|priest team/i);
+    assert.match(copy.hashtags, /#VedicGuidance/);
+  }
+});
+
 test('original painted plates are distinct assets wired into their own subjects', () => {
   const hashes = new Set();
   for (const [id, title] of Object.entries(PLATES)) {
@@ -303,15 +318,22 @@ test('original painted plates are distinct assets wired into their own subjects'
     const size = imageSize(jpg);
     assert.equal(size.width, 1024, title);
     assert.equal(size.height, 1024, title);
-    const topic = topics.find((t) => t.id === id);
+    const owner = Object.keys(ALT_PLATES).find((k) => ALT_PLATES[k] === id) || id;
+    const topic = topics.find((t) => t.id === owner);
     assert.ok(topic, `${title} has no matching subject`);
     const models = modelsFor(topic);
     assert.ok(models.length >= MIN_DESIGNS_PER_SUBJECT);
+    const allowed = new Set([topic.id, ALT_PLATES[topic.id]].filter(Boolean));
     for (const m of models) {
-      assert.equal(m.setting, id, `${topic.name} did not load its painted plate`);
+      assert.ok(allowed.has(m.setting), `${topic.name} did not load a registered painted plate`);
       assert.equal(m.plate, true);
       assert.equal(m.medium, 'Painted scene');
     }
+  }
+  for (const [base, alt] of Object.entries(ALT_PLATES)) {
+    const topic = topics.find((t) => t.id === base);
+    const settings = new Set(modelsFor(topic).map((m) => m.setting));
+    assert.deepEqual([...settings].sort(), [base, alt].sort(), `${topic.name} offers both art styles`);
   }
   assert.ok(hashes.size >= 10);
 });

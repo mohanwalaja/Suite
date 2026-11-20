@@ -93,6 +93,32 @@ export const PLATES = {
   'fest-margazhi': 'The Jasmine Garden',
   'fest-cheti-chand': 'The River Guardian',
   'fest-ambubachi-mela': 'The Sacred Spring',
+  'birth-alt': 'The Watercolour Birth Wheel',
+  'marriage-alt': 'The Risograph Matching Charts',
+  'naming-alt': 'The Textile Cradle',
+  'muhurtham-alt': 'The Deco Calendar Wheel',
+  'bhava-alt': 'The Paper House Mandala',
+  'varga-alt': 'The Botanical Divisions',
+  'rasi-alt': 'The Glazed Zodiac Ring',
+  'panchangam-alt': 'The Sunlit Almanac',
+  'nakshatra-alt': 'The Foil Star Map',
+  'porutham-alt': 'The Terracotta Scales',
+};
+
+// A second, deliberately different art direction for each service. Half of the designs use
+// the original antique plate and half use this modern plate, so a subject offers two genuine
+// styles rather than recolours of one image.
+export const ALT_PLATES = {
+  birth: 'birth-alt',
+  marriage: 'marriage-alt',
+  naming: 'naming-alt',
+  muhurtham: 'muhurtham-alt',
+  bhava: 'bhava-alt',
+  varga: 'varga-alt',
+  rasi: 'rasi-alt',
+  panchangam: 'panchangam-alt',
+  nakshatra: 'nakshatra-alt',
+  porutham: 'porutham-alt',
 };
 
 // These replacements were painted with the subject's own deity as the central figure.

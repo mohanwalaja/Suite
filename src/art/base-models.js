@@ -1,6 +1,6 @@
 import { DEITIES, paintings, paintingsOf } from './deities.js';
 import { occasionBrief } from './briefs.js';
-import { DEITY_IN_PLATE, PLATES, plateFor } from './plates.js';
+import { ALT_PLATES, DEITY_IN_PLATE, PLATES, plateFor } from './plates.js';
 // Model IDs remain stable for saved posters. Each row is an illustration brief, not a tint.
 // title | focal illustration (or @photograph) | composition | supporting element | optional setting
 const rows = (text) =>
@@ -356,6 +356,16 @@ const porutham = extend(
     ...marriage,
   ],
 );
+// Pure typographic notice posts: many independent word-led layouts, no borrowed artwork.
+const wordPosterRows = (label) =>
+  Array.from({ length: 50 }, (_, i) => [
+    `${label} · ${String(i + 1).padStart(2, '0')}`,
+    `word:${i % 6}`,
+    layouts[i % layouts.length],
+    'letters',
+    null,
+    i,
+  ]);
 const services = {
   birth,
   marriage,
@@ -367,6 +377,9 @@ const services = {
   panchangam,
   muhurtham,
   porutham,
+  'free-beta': wordPosterRows('Free Beta'),
+  'priest-busy': wordPosterRows('Priest Is Busy'),
+  'priest-team-ready': wordPosterRows('Priest Team Ready'),
 };
 const serviceInfo = {
   birth: [
@@ -428,6 +441,24 @@ const serviceInfo = {
     'Two-chart studies & the ten classical checks',
     'Ten checks · Star matching',
     'Try the Porutham check',
+  ],
+  'free-beta': [
+    'Free beta notes',
+    'Plain word posters about exploring the beta tools',
+    'Free beta · Vedic tools',
+    'Explore the beta',
+  ],
+  'priest-busy': [
+    'Priest availability notes',
+    'Plain word posters for when your priest is busy',
+    'Priest team · Here to help',
+    'We are here to help',
+  ],
+  'priest-team-ready': [
+    'Priest team notes',
+    'Plain word posters about our ready-to-help priest team',
+    'Priest team · Vedic guidance',
+    'Ask our priest team',
   ],
 };
 
@@ -688,16 +719,33 @@ export function modelsFor(topic) {
   // original asset, not a recolour or a renamed copy of the former photograph.
   if (plateId)
     for (const m of result) {
+      // Services alternate between the original plate and a distinct modern art direction.
+      const active = ALT_PLATES[topic.id] && m.id % 2 ? ALT_PLATES[topic.id] : plateId;
       // Keep the subject's own deity painting as a separate, selectable layer. The new
       // painted plate is the ground; the specific god picture is framed over it below.
       m.deityPicture = m.painting ? m.setting : null;
-      m.setting = plateId;
+      m.setting = active;
       m.plate = true;
       m.painting = false;
       m.medium = 'Painted scene';
-      m.detail = PLATES[plateId];
-      m.deityInPlate = DEITY_IN_PLATE.has(plateId);
-      m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}:${m.deityPicture || ''}`;
+      m.detail = PLATES[active];
+      m.deityInPlate = DEITY_IN_PLATE.has(active);
+      m.plateStyle = ALT_PLATES[topic.id] && m.id % 2 ? 'modern' : 'classic';
+      m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${active}:${m.deityPicture || ''}`;
+    }
+  if (topic.wordPoster)
+    for (const m of result) {
+      m.wordPoster = true;
+      m.hero = null;
+      m.setting = null;
+      m.local = null;
+      m.painting = false;
+      m.plate = false;
+      m.deityPicture = null;
+      m.deityInPlate = false;
+      m.companion = '';
+      m.detail = topic.tagline;
+      m.key = `${m.key}:word`;
     }
   if (cache.size >= 48) cache.delete(cache.keys().next().value);
   cache.set(key, result);

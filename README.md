@@ -83,14 +83,14 @@ A public HTTPS origin and the temporary `/media/` route must be reachable by Met
 
 ## Creative Atelier
 
-The former fifty-model library is now the first half of a **CreativeRegistry** that registers 150 structurally different compositions for every subject: ten services, 80 festivals, 35 deities and 44 special days (25,350 definitions). Direction I preserves the original editorial studies byte-for-byte in saved drafts. Directions II and III rebuild each study twice with ten composition archetypes, ten illustration arrangements, seven alternative typographic hierarchies, ten background constructions and ten decorative programmes. Colour, font substitution, mirroring and tiny offsets are explicitly excluded from the uniqueness check; the registry throws if two designs on a subject share one structural signature.
+The former fifty-model library is now the first half of a **CreativeRegistry** that registers 150 structurally different compositions for every subject: thirteen services, 80 festivals, 35 deities and 44 special days (25,800 definitions). Direction I preserves the original editorial studies byte-for-byte in saved drafts. Directions II and III rebuild each study twice with ten composition archetypes, ten illustration arrangements, seven alternative typographic hierarchies, ten background constructions and ten decorative programmes. Colour, font substitution, mirroring and tiny offsets are explicitly excluded from the uniqueness check; the registry throws if two designs on a subject share one structural signature.
 
 - `src/creative/registry.js`: CreativeRegistry and per-subject design definitions.
 - `src/creative/composition.js`, `artwork.js`, `typography.js`, `variation.js`: composition, graphic artwork, typography and bounded variation engines.
 - `src/creative/uniqueness.js`, `quality.js`: structural signatures, perceptual comparison and export checks.
 - `src/creative/rotation.js`, `history.js`, `captions.js`: persistent no-repeat rotation, event history and rotating English copy.
 - `src/art/press.js` and `src/art/illustration.js`: canvas composition renderer and locally generated SVG scenes.
-- `src/art/plates.js`: original, individually painted AI plates for all ten services and the first festival subjects without historical artwork. Each plate is a distinct locally bundled file with its own thumbnail; the renderer frames a different region for each design and lays the subject's own line work over it, so the artwork is never a flat colour swap of one template. Every god-related festival keeps its own deity painting as a selectable, gold-framed vignette in every poster, whether or not the subject has a replacement plate. Mahabali and Buddha received original devotional paintings so Onam and Buddha Purnima are covered too.
+- `src/art/plates.js`: original, individually painted AI plates for all ten services, each with a second deliberately different modern art direction (watercolour, risograph, folk textile, Art Deco, paper craft, botanical blueprint, glazed ceramic, flat-lay, foil star map and terracotta folk poster) and the first festival subjects without historical artwork. Each plate is a distinct locally bundled file with its own thumbnail; the renderer frames a different region for each design and lays the subject's own line work over it, so the artwork is never a flat colour swap of one template. Every god-related festival keeps its own deity painting as a selectable, gold-framed vignette in every poster, whether or not the subject has a replacement plate. Mahabali and Buddha received original devotional paintings so Onam and Buddha Purnima are covered too. Three additional word-led service subjects — Free Beta, Your Priest Is Busy and Priest Team Ready — use pure typography with no borrowed artwork, and their captions and hashtags lead with the message instead of burying it.
 - **Daily Planner**: choose a subject and creative direction, review the suggested design and caption, note a schedule, save the plan as a draft, review publishing status, and open the selection in the editor. Nothing is published automatically.
 - **Layers tab**: undo/redo, layer selection, artwork position and scale, focal shape, decorative system, text position, alignment guides, logo placement, duplicate design, export placement and an actionable quality report.
 - Rotation history (`astrosivam:creative-history-v1`) stores subject, design ID, date, source and a perceptual signature; it survives refreshes and can be cleared from the Planner. Meta publishing still requires the same configured approval and real account permissions.
@@ -98,9 +98,9 @@ The former fifty-model library is now the first half of a **CreativeRegistry** t
 ## Verification
 
 ```sh
-npm test                       # catalogue, 25,350 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
+npm test                       # catalogue, 25,800 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
 npx playwright install chromium
-npm run test:browser           # 20 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
+npm run test:browser           # 21 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
 npm run build
 ```
 

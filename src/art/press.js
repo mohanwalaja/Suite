@@ -253,6 +253,24 @@ function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
     mid = mix(base, foil, 0.15),
     line = rgba(foil, 0.68);
   paper(c, h, base);
+  // Word-led service notices need no picture: a generous typographic field, fine rules and
+  // alternating centred/left hierarchies give each of the 150 designs a different shape.
+  if (m.wordPoster) {
+    trim(c, h, foil, false);
+    const centred = m.id % 2 === 0;
+    const x = centred ? 110 : 92,
+      width = centred ? 780 : 816;
+    rect(c, 66, h * 0.12, 868, h * 0.72, mid);
+    stroke(c, 78, h * 0.13, 844, h * 0.7, line, 1.2);
+    for (let i = 0; i < 4; i++) {
+      const yy = h * (0.16 + i * 0.16);
+      rule(c, 96, yy, centred ? 904 : 868, yy, rgba(foil, 0.16), 1);
+    }
+    ticks(c, x, h * 0.78, width, rgba(foil, 0.5));
+    lozenge(c, 104, h * 0.17, 5, foil);
+    lozenge(c, 896, h * 0.17, 5, foil);
+    return box(x, h * 0.25, width, h * 0.73, 96, centred);
+  }
   if (m.direction === 1) return creativePlate(c, h, m, palette, im, art, adjust, deityIm);
   // A supplied portrait can have any ratio. Never crop its face or place marketing text over it.
   if (m.local) {

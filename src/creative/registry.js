@@ -85,7 +85,7 @@ export class CreativeRegistry {
           }
         : ARRANGEMENTS[variation.arrangementId] || arrangementById(variation.arrangementId);
     const [hero, companion] =
-      pass > 0 && !base.local && (!base.setting || base.plate)
+      pass > 0 && !base.local && !base.wordPoster && (!base.setting || base.plate)
         ? motifPairFor(pool, base.id, pass)
         : [base.hero || null, base.companion || null];
     // Sacred pictures and personal photographs are never swapped for another subject's art.

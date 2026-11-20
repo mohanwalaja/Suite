@@ -7,6 +7,20 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.canvas-mat canvas')).toHaveAttribute('width', '1080');
 });
 
+test('word-led service notices render without artwork and carry stronger copy', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Services', exact: true }).click();
+  await page.locator('.topic-select').click();
+  await page.getByLabel('Search topics').fill('Free Beta');
+  await page.locator('.topic-option').first().click();
+  await expect(page.locator('.canvas-mat canvas')).toHaveAttribute('data-rendered', 'true');
+  await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Caption & tags' }).click();
+  await expect(page.getByLabel('Post caption')).toContainText('free beta');
+  await expect(page.getByLabel('Hashtags', { exact: true })).toHaveValue(/#VedicGuidance/);
+});
+
 test('150 original designs, selectable fonts, palettes, and correctly sized PNG exports', async ({
   page,
 }) => {

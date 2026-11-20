@@ -19,7 +19,7 @@ class MemoryStorage {
 }
 
 test('Creative Registry registers 100+ complete definitions for every existing subject', () => {
-  assert.equal(topics.length, 169);
+  assert.equal(topics.length, 172);
   assert.equal(registry.count(topics[0]), DESIGN_COUNT);
   assert.ok(DESIGN_COUNT >= MIN_DESIGNS_PER_SUBJECT);
   for (const topic of topics) {

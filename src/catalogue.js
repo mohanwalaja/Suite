@@ -5,6 +5,7 @@ import { wishes } from './art/wishes.js';
 import { modelFor } from './art/models.js';
 import { BRAND, PORTRAIT } from '../shared/poster-spec.js';
 export const SITE = BRAND.site;
+export const WORD_POSTER_IDS = new Set(['free-beta', 'priest-busy', 'priest-team-ready']);
 const service = (id, name, eyebrow, tagline, description, path, tags) => ({
   id,
   name,
@@ -14,6 +15,7 @@ const service = (id, name, eyebrow, tagline, description, path, tags) => ({
   description,
   path,
   tags,
+  wordPoster: WORD_POSTER_IDS.has(id),
 });
 export const services = [
   service(
@@ -105,6 +107,33 @@ export const services = [
     'Try the free 10-Porutham star match, then explore a detailed marriage compatibility report from the Chennai Vedic priest team.',
     '/',
     ['Porutham', 'StarMatching', 'VedicAstrology'],
+  ),
+  service(
+    'free-beta',
+    'Free Beta',
+    'Explore the tools',
+    'Try the ASTRO SIVAM free beta.',
+    'Explore the ASTRO SIVAM free beta tools and see how our Vedic services work before you decide.',
+    '/',
+    ['FreeBeta', 'VedicTools', 'AstroSivam'],
+  ),
+  service(
+    'priest-busy',
+    'Your Priest Is Busy',
+    'A note from our team',
+    'Your priest is busy. We are here to help.',
+    'When your priest is busy, the ASTRO SIVAM priest team is ready to guide you with your Vedic questions.',
+    '/',
+    ['PriestTeam', 'VedicGuidance', 'HereToHelp'],
+  ),
+  service(
+    'priest-team-ready',
+    'Priest Team Ready',
+    'Here to help',
+    'Our priest team is ready to help you.',
+    'Our ASTRO SIVAM priest team is ready to help you with your Vedic questions and service choices.',
+    '/',
+    ['PriestTeam', 'ReadyToHelp', 'VedicGuidance'],
   ),
 ];
 const festivals =
@@ -334,12 +363,23 @@ export const matchesTopic = (t, q) =>
       Object.hasOwn(aliases, t.name) ? aliases[t.name] : '',
     ].join(' '),
   ).includes(normalizeSearch(q));
+const serviceClosing = (topic) =>
+  topic.wordPoster
+    ? `Save this note and share it with someone who needs it.\nExplore ${topic.name} at ${BRAND.website}.`
+    : `Explore ${topic.name} at ${BRAND.website}${topic.path === '/' ? '' : topic.path}. Ask questions, compare the details, and choose what suits you.`;
 export const createCopy = (topic) => ({
   caption:
     topic.category === 'Services'
-      ? `${topic.description}\n\nExplore ${topic.name} at ${BRAND.website}${topic.path === '/' ? '' : topic.path}.`
+      ? `${topic.tagline}\n\n${topic.description}\n\n${serviceClosing(topic)}`
       : `${topic.description}\n\nWith warm wishes,\n${BRAND.name} · ${BRAND.website}`,
-  hashtags: ['AstroSivam', ...topic.tags].map((t) => '#' + t).join(' '),
+  hashtags: [
+    'AstroSivam',
+    ...topic.tags,
+    ...(topic.category === 'Services' ? ['VedicGuidance', 'PriestTeam'] : []),
+  ]
+    .filter((t, i, all) => all.indexOf(t) === i)
+    .map((t) => '#' + t)
+    .join(' '),
 });
 // Use the same design for the picture card and the editor after it is tapped. Choosing a
 // picture for the current subject preserves its edited copy and independently chosen font.
