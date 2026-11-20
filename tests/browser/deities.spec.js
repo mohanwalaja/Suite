@@ -153,6 +153,31 @@ test('festival picker restricts the figures and keeps the festival, edited wish 
   await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toHaveCount(0);
 });
 
+test('plated festivals keep their specific deity picture selectable and framed', async ({ page }) => {
+  await button(page, 'Festivals').click();
+  await page.locator('.topic-select').click();
+  await page.getByLabel('Search topics').fill('Ganesh Chaturthi');
+  await page.getByRole('button', { name: /Ganesh Chaturthi/ }).click();
+  await expect(page.getByRole('button', { name: /Choose a deity picture/ })).toBeVisible();
+  await page.getByRole('button', { name: /Choose a deity picture/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading')).toHaveText('Ganesh Chaturthi pictures');
+  await expect(dialog.getByRole('button', { name: /Use picture:/ }).first()).toBeVisible();
+  await dialog.getByRole('button', { name: /Use picture:/ }).first().click();
+  await expect(page.locator('.canvas-mat canvas')).toHaveAttribute(
+    'aria-label',
+    /Ganesh Chaturthi/,
+  );
+  const paintings = await page.evaluate(async () => {
+    const { picturesFor } = await import('/src/art/models.js');
+    const { topics } = await import('/src/catalogue.js');
+    return picturesFor(topics.find((t) => t.id === 'fest-ganesh-chaturthi')).map(
+      (m) => m.deityPicture,
+    );
+  });
+  expect(paintings).toContain('chaturthi-ganesha');
+});
+
 test('a regional deity accepts multiple local pictures and a saved draft uses the selected one after reload', async ({
   page,
 }) => {

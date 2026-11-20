@@ -110,7 +110,7 @@ export class CreativeRegistry {
         ? 'The selected personal picture, shown uncropped with its own clear space.'
         : setting
           ? base.plate
-            ? `${base.detail}: original painted plate with subject-specific line work.`
+            ? `${base.detail}: original painted plate${base.deityPicture ? ` with ${base.figure}’s own painting framed over it` : ''}.`
             : `${base.name}: registered ${base.medium.toLowerCase()} with subject-specific attributes.`
           : `${titleCase(hero || 'motif')} with a ${titleCase(companion || 'supporting')} vignette.`,
       secondaryElements: titleCase(companion || ornament.name),

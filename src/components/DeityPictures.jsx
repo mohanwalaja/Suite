@@ -53,7 +53,7 @@ export function DeityLibrary({
     const pictures = picturesFor(t),
       cover = pictures[0];
     if (!cover) continue;
-    const key = cover.local ? t.id : cover.setting;
+    const key = cover.local ? t.id : cover.deityPicture || cover.setting;
     if (!groups.has(key)) groups.set(key, { cover, entries: [] });
     groups.get(key).entries.push({ topic: t, count: pictures.length });
   }
@@ -63,7 +63,9 @@ export function DeityLibrary({
   const selected = modelFor(design.topic, design.styleId);
   const active = (m) =>
     design.topic.id === topic?.id &&
-    (m.local ? m.local === selected.local : m.setting === selected.setting);
+    (m.local
+      ? m.local === selected.local
+      : (m.deityPicture || m.setting) === (selected.deityPicture || selected.setting));
   const open = (t) => {
     setFigure('All pictures');
     setError('');

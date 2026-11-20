@@ -688,15 +688,15 @@ export function modelsFor(topic) {
   // original asset, not a recolour or a renamed copy of the former photograph.
   if (plateId)
     for (const m of result) {
+      // Keep the subject's own deity painting as a separate, selectable layer. The new
+      // painted plate is the ground; the specific god picture is framed over it below.
+      m.deityPicture = m.painting ? m.setting : null;
       m.setting = plateId;
       m.plate = true;
-      // A replacement plate supersedes the older painting in this collection. The original
-      // deity assets stay in the shared catalogue for the devotional directory.
       m.painting = false;
-      m.figure = '';
       m.medium = 'Painted scene';
       m.detail = PLATES[plateId];
-      m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}`;
+      m.key = `${m.key.slice(0, m.key.lastIndexOf(':'))}:${plateId}:${m.deityPicture || ''}`;
     }
   if (cache.size >= 48) cache.delete(cache.keys().next().value);
   cache.set(key, result);
@@ -706,7 +706,7 @@ export function modelsFor(topic) {
 export function picturesFor(topic) {
   const unique = new Map();
   for (const m of modelsFor(topic)) {
-    const k = m.local || (m.painting ? m.setting : null);
+    const k = m.local || (m.painting ? m.setting : m.deityPicture);
     if (k && !unique.has(k)) unique.set(k, m);
   }
   return [...unique.values()];

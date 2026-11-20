@@ -265,10 +265,16 @@ export async function paintPoster(canvas, design, { small = false, shouldDraw = 
     (small && m.painting
       ? `/art/thumbs/${m.setting}.webp?view=portrait`
       : `/art/scenes/${m.setting}.jpg`);
-  const [logo, im, art] = await Promise.all([
+  const deitySource = m.deityPicture
+    ? small
+      ? `/art/thumbs/${m.deityPicture}.webp?view=portrait`
+      : `/art/scenes/${m.deityPicture}.jpg`
+    : null;
+  const [logo, im, art, deityIm] = await Promise.all([
     imageOf(BRAND.logo),
     m.local ? localImage(m.local) : source ? imageOf(source) : null,
     m.hero ? illustrationImage(m) : null,
+    deitySource ? imageOf(deitySource) : null,
     document.fonts.load(`40px "${font}"`),
     document.fonts.load('34px "Cormorant Garamond"'),
     /[\u0900-\u097f]/.test([design.headline, design.topic.name, design.tagline].join(''))
@@ -301,7 +307,7 @@ export async function paintPoster(canvas, design, { small = false, shouldDraw = 
     c.scale(scale, scale);
     c.translate(-500, -H / 2);
   }
-  const b = paintArt(c, H, m, pal, im, art, adj);
+  const b = paintArt(c, H, m, pal, im, art, adj, deityIm);
   c.restore();
   const signaturePosition = design.logoPosition || 'top-left';
   if (signaturePosition.startsWith('bottom'))

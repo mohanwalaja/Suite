@@ -222,13 +222,38 @@ function paintingPlate(c, h, m, colors, im, ornament) {
   const left = ['gallery', 'column', 'cameo', 'canopy'].includes(m.layout);
   return side(left, ['gallery', 'seal'].includes(m.layout) ? 517 : 545);
 }
-export function paintArt(c, h, m, palette, im, art, adjust = {}) {
+// A festival's own deity painting is framed over its premium plate, never stretched or
+// cropped to fill the sheet. The gold double ring keeps the original artwork legible.
+function deityVignette(c, im, x, y, size, foil) {
+  if (!im) return;
+  const r = size / 2;
+  c.save();
+  c.beginPath();
+  c.arc(x + r, y + r, r, 0, Math.PI * 2);
+  c.clip();
+  c.fillStyle = '#fffaf0';
+  c.fillRect(x, y, size, size);
+  contain(c, im, x, y, size, size);
+  c.restore();
+  c.beginPath();
+  c.arc(x + r, y + r, r + 5, 0, Math.PI * 2);
+  c.strokeStyle = foil;
+  c.lineWidth = 2;
+  c.stroke();
+  c.beginPath();
+  c.arc(x + r, y + r, r + 11, 0, Math.PI * 2);
+  c.strokeStyle = rgba(foil, 0.45);
+  c.lineWidth = 1;
+  c.stroke();
+}
+
+export function paintArt(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
   const [base, foil, ink] = palette.colors;
   const tint = mix(base, ink, 0.07),
     mid = mix(base, foil, 0.15),
     line = rgba(foil, 0.68);
   paper(c, h, base);
-  if (m.direction === 1) return creativePlate(c, h, m, palette, im, art, adjust);
+  if (m.direction === 1) return creativePlate(c, h, m, palette, im, art, adjust, deityIm);
   // A supplied portrait can have any ratio. Never crop its face or place marketing text over it.
   if (m.local) {
     trim(c, h, foil, false);
@@ -275,6 +300,8 @@ export function paintArt(c, h, m, palette, im, art, adjust = {}) {
       contain(c, art, -231, -231, 462, 462);
       c.restore();
     }
+    if (m.plate && m.deityPicture && deityIm)
+      deityVignette(c, deityIm, 596, h * 0.15, Math.min(380, h * 0.31), foil);
     return box(65, h * 0.29, art ? 440 : 463, h * 0.826, 145);
   }
   trim(c, h, foil, false);
@@ -593,7 +620,7 @@ function frameArt(c, area, draw) {
   }
 }
 
-function creativePlate(c, h, m, palette, im, art, adjust = {}) {
+function creativePlate(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
   const [base, foil] = palette.colors;
   const comp = compositionById(m.compositionId);
   const { art: area, text, inset } = comp.geometry(h);
@@ -621,6 +648,10 @@ function creativePlate(c, h, m, palette, im, art, adjust = {}) {
         rule(c, area.x + 12, area.y + (area.h * i) / 5, area.x + area.w - 12, area.y + (area.h * i) / 5, rgba(foil, 0.25), 1);
     }
   });
+  if (m.plate && m.deityPicture && deityIm) {
+    const size = Math.min(area.w, area.h) * 0.72;
+    deityVignette(c, deityIm, area.x + area.w - size - 16, area.y + 16, size, foil);
+  }
   if (inset && art) {
     rect(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, matte);
     stroke(c, inset.x - 5, inset.y - 5, inset.w + 10, inset.h + 10, rgba(foil, 0.5), 1);

@@ -237,9 +237,14 @@ test('deity pictures are individually generated raster paintings, not recolored 
   ]) {
     const topic = topics.find((t) => t.name === n);
     if (PLATES[topic.id]) {
-      // Plated festivals replaced their older devotional paintings with the new house style.
-      assert.deepEqual(picturesFor(topic), [], n);
+      // Plated festivals keep their specific deity paintings as a selectable, framed layer.
       assert.ok(modelsFor(topic).every((m) => m.plate && !m.painting), n);
+      if (occasionBrief(topic).gods.length) {
+        const pics = picturesFor(topic);
+        assert.ok(pics.length >= 1, n);
+        assert.ok(pics.every((m) => m.deityPicture && m.figure), n);
+        assert.ok(modelsFor(topic).some((m) => m.deityPicture), n);
+      }
       continue;
     }
     const pics = picturesFor(topic);

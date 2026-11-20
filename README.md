@@ -90,7 +90,7 @@ The former fifty-model library is now the first half of a **CreativeRegistry** t
 - `src/creative/uniqueness.js`, `quality.js`: structural signatures, perceptual comparison and export checks.
 - `src/creative/rotation.js`, `history.js`, `captions.js`: persistent no-repeat rotation, event history and rotating English copy.
 - `src/art/press.js` and `src/art/illustration.js`: canvas composition renderer and locally generated SVG scenes.
-- `src/art/plates.js`: original, individually painted AI plates for all ten services and the first festival subjects without historical artwork. Each plate is a distinct locally bundled file with its own thumbnail; the renderer frames a different region for each design and lays the subject's own line work over it, so the artwork is never a flat colour swap of one template.
+- `src/art/plates.js`: original, individually painted AI plates for all ten services and the first festival subjects without historical artwork. Each plate is a distinct locally bundled file with its own thumbnail; the renderer frames a different region for each design and lays the subject's own line work over it, so the artwork is never a flat colour swap of one template. Devotional festivals keep their specific deity painting as a selectable, gold-framed vignette over the new plate.
 - **Daily Planner**: choose a subject and creative direction, review the suggested design and caption, note a schedule, save the plan as a draft, review publishing status, and open the selection in the editor. Nothing is published automatically.
 - **Layers tab**: undo/redo, layer selection, artwork position and scale, focal shape, decorative system, text position, alignment guides, logo placement, duplicate design, export placement and an actionable quality report.
 - Rotation history (`astrosivam:creative-history-v1`) stores subject, design ID, date, source and a perceptual signature; it survives refreshes and can be cleared from the Planner. Meta publishing still requires the same configured approval and real account permissions.
@@ -100,7 +100,7 @@ The former fifty-model library is now the first half of a **CreativeRegistry** t
 ```sh
 npm test                       # catalogue, 25,350 definitions, rotation, history, captions, quality, fonts, assets, account isolation, publishing workflow
 npx playwright install chromium
-npm run test:browser           # 18 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
+npm run test:browser           # 19 real browser tests of the planner, layers, exports, drafts, logo and mobile flows
 npm run build
 ```
 
