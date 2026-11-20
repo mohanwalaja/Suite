@@ -1967,6 +1967,7 @@ textarea {
   color: #8a5b15;
 }
 .job-status.failed,
+.job-status.uncertain,
 .job-status.error {
   background: #fae3e1;
   color: #9a3329;

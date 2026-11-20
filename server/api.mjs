@@ -8,26 +8,77 @@ import { BRAND, PORTRAIT, POSTER_REVISION } from '../shared/poster-spec.js';
 const hex = () => crypto.randomBytes(24).toString('hex');
 const sha = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
-// Persistent server state. Tokens and poster bytes stay on disk with 0600 permissions and
-// are never returned to the browser; only public job metadata crosses the API boundary.
-function createStore(env) {
+// Encrypt each Meta Page token with AES-256-GCM; bind ciphertext to its session and Page.
+// A missing key disables Meta connection rather than writing credentials in plaintext.
+function tokenCipher(env) {
+  const text = env.STUDIO_TOKEN_KEY || '';
+  if (!text) return null;
+  if (!/^[a-fA-F0-9]{64}$/.test(text))
+    throw new Error('STUDIO_TOKEN_KEY must be exactly 64 hexadecimal characters.');
+  const key = Buffer.from(text, 'hex');
+  return {
+    encrypt(token, sessionId, pageId) {
+      const iv = crypto.randomBytes(12);
+      const c = crypto.createCipheriv('aes-256-gcm', key, iv);
+      c.setAAD(Buffer.from(JSON.stringify([sessionId, pageId])));
+      const data = Buffer.concat([c.update(token, 'utf8'), c.final()]);
+      return { version: 1, iv: iv.toString('base64'), tag: c.getAuthTag().toString('base64'), data: data.toString('base64') };
+    },
+    decrypt(box, sessionId, pageId) {
+      try {
+        if (box?.version !== 1) throw new Error();
+        const iv = Buffer.from(box.iv, 'base64');
+        const tag = Buffer.from(box.tag, 'base64');
+        if (iv.length !== 12 || tag.length !== 16) throw new Error();
+        const d = crypto.createDecipheriv('aes-256-gcm', key, iv);
+        d.setAAD(Buffer.from(JSON.stringify([sessionId, pageId])));
+        d.setAuthTag(tag);
+        return Buffer.concat([d.update(Buffer.from(box.data, 'base64')), d.final()]).toString('utf8');
+      } catch {
+        throw new Error('Unable to decrypt stored Meta credentials. Verify the server encryption key and state integrity.');
+      }
+    },
+  };
+}
+
+// Persistent state uses atomic replacement; credentials are encrypted before serialization.
+function createStore(env, cipher) {
   const dir = path.resolve(env.STUDIO_DATA_DIR || '.data');
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const mediaDir = path.join(dir, 'media');
   fs.mkdirSync(mediaDir, { recursive: true, mode: 0o700 });
   const file = path.join(dir, 'studio-state.json');
   let state = { sessions: {}, jobs: [], notifications: [] };
-  try {
-    const loaded = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (fs.existsSync(file)) {
+    let loaded;
+    try { loaded = JSON.parse(fs.readFileSync(file, 'utf8')); }
+    catch { throw new Error('Studio state cannot be read; restore a valid backup before starting.'); }
     state = {
       sessions: loaded.sessions && typeof loaded.sessions === 'object' ? loaded.sessions : {},
       jobs: Array.isArray(loaded.jobs) ? loaded.jobs : [],
       notifications: Array.isArray(loaded.notifications) ? loaded.notifications : [],
     };
-  } catch {}
+    for (const [id, session] of Object.entries(state.sessions)) {
+      for (const page of session.pages || []) {
+        if (page.token) throw new Error('Legacy plaintext Meta credentials detected. Remove the legacy state securely and reconnect, or migrate it offline before startup.');
+        if (page.tokenEncrypted) {
+          if (!cipher) throw new Error('STUDIO_TOKEN_KEY is required to open stored Meta credentials.');
+          page.token = cipher.decrypt(page.tokenEncrypted, id, page.id);
+          delete page.tokenEncrypted;
+        }
+      }
+    }
+  }
   const save = () => {
+    const safeSessions = Object.fromEntries(Object.entries(state.sessions).map(([id, session]) => [id, {
+      ...session,
+      pages: (session.pages || []).map(({ token, ...page }) => {
+        if (token && !cipher) throw new Error('Meta credential encryption is not configured.');
+        return { ...page, ...(token ? { tokenEncrypted: cipher.encrypt(token, id, page.id) } : {}) };
+      }),
+    }]));
     const tmp = file + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(state), { mode: 0o600 });
+    fs.writeFileSync(tmp, JSON.stringify({ ...state, sessions: safeSessions }), { mode: 0o600 });
     fs.renameSync(tmp, file);
     try {
       fs.chmodSync(file, 0o600);
@@ -74,10 +125,37 @@ function zonedTimeToUtc(local, timeZone) {
   return ts;
 }
 
+// An exclusive data-directory lease prevents concurrent processes from reading stale
+// state or publishing the same job. A crash leaves a lease requiring operator review;
+// it is never automatically stolen while another worker might still be running.
+function acquireLease(env) {
+  const dir = path.resolve(env.STUDIO_DATA_DIR || '.data');
+  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  const lock = path.join(dir, '.writer-lock');
+  try { fs.mkdirSync(lock, { mode: 0o700 }); }
+  catch (e) {
+    if (e.code === 'EEXIST') throw new Error('Studio data directory is already locked. Stop the other server; after a crash, verify no server is using this directory before removing .writer-lock.');
+    throw e;
+  }
+  let held = true;
+  const release = () => {
+    if (!held) return;
+    held = false;
+    fs.rmSync(lock, { recursive: true, force: true });
+    process.off('exit', release);
+  };
+  process.once('exit', release);
+  return release;
+}
+
 export function createApi(env = process.env, fetcher = fetch) {
   const app = express();
   app.disable('x-powered-by');
-  const store = createStore(env);
+  const cipher = tokenCipher(env);
+  const release = acquireLease(env);
+  let store;
+  try { store = createStore(env, cipher); }
+  catch (e) { release(); throw e; }
   const sessions = new Map(
     Object.entries(store.state.sessions).map(([id, s]) => [
       id,
@@ -102,6 +180,7 @@ export function createApi(env = process.env, fetcher = fetch) {
         {
           id,
           pages: s.pages || [],
+          permissions: s.permissions || [],
           selected: s.selected || null,
           log: s.log || [],
           until: s.until || 0,
@@ -138,6 +217,7 @@ export function createApi(env = process.env, fetcher = fetch) {
     publishedAt: j.publishedAt || null,
     lastError: j.lastError || null,
     retryAllowed: !j.publishAttempted && ['failed', 'cancelled'].includes(j.status),
+    reconciliation: j.reconciliation || null,
     results: j.results || [],
   });
 
@@ -145,7 +225,7 @@ export function createApi(env = process.env, fetcher = fetch) {
     ? env.META_GRAPH_VERSION
     : 'v23.0';
   const base = (env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
-  const ready = !!(env.META_APP_ID && env.META_APP_SECRET && /^https:\/\/[^/]+$/.test(base));
+  const ready = !!(cipher && env.META_APP_ID && env.META_APP_SECRET && /^https:\/\/[^/]+$/.test(base));
   const redirect = base + '/api/meta/callback';
 
   function cleanup() {
@@ -165,10 +245,7 @@ export function createApi(env = process.env, fetcher = fetch) {
     const r = await fetcher(u, opts);
     const data = await r.json();
     if (!r.ok || data.error) {
-      const e = new Error(
-        data.error?.error_user_msg ||
-          'Meta could not complete this request. Check the account permissions and reconnect if needed.',
-      );
+      const e = new Error('Meta could not complete this request. Check the account permissions and reconnect if needed.');
       e.metaCode = data.error?.code;
       throw e;
     }
@@ -243,7 +320,8 @@ export function createApi(env = process.env, fetcher = fetch) {
         s.log = s.log.slice(0, 150);
         saveState();
       } catch (e) {
-        results.push({ channel, ok: false, error: e.message || 'Publishing failed.' });
+        // Transport or provider errors can contain credentials or URLs: never return them.
+        results.push({ channel, ok: false, error: 'Meta publication could not be confirmed. Check the destination before retrying.' });
       }
     }
     return results;
@@ -254,6 +332,10 @@ export function createApi(env = process.env, fetcher = fetch) {
     if (!ready || !p)
       return { error: 'Connect a Facebook Page or Instagram professional account before publishing.', status: 409 };
     const { image, caption, platforms, requestId, title, pageId } = req.body || {};
+    const needed = ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts'];
+    if (Array.isArray(platforms) && platforms.includes('instagram')) needed.push('instagram_basic', 'instagram_content_publish');
+    if (needed.some((permission) => !req.studio.permissions?.includes(permission)))
+      return { error: 'Required Meta permissions have not been confirmed. Reconnect and grant the requested permissions.', status: 409 };
     if (pageId !== p.id)
       return {
         error: 'Your publishing Page has changed. Refresh the account connection and review the destination again.',
@@ -415,6 +497,13 @@ export function createApi(env = process.env, fetcher = fetch) {
         );
         access = t.access_token || access;
       } catch {}
+      const permissionResponse = await graph('me/permissions', access, {});
+      if (!Array.isArray(permissionResponse.data)) throw new Error('Permissions unavailable');
+      const permissions = permissionResponse.data
+        .filter((p) => p.status === 'granted' && typeof p.permission === 'string')
+        .map((p) => p.permission);
+      if (!['pages_show_list', 'pages_read_engagement', 'pages_manage_posts'].every((p) => permissions.includes(p)))
+        throw new Error('Required permissions not granted');
       let after,
         pages = [];
       for (let i = 0; i < 10; i++) {
@@ -436,6 +525,7 @@ export function createApi(env = process.env, fetcher = fetch) {
           token: p.access_token,
           ig: p.instagram_business_account,
         }));
+      s.permissions = permissions;
       s.selected = s.pages[0]?.id || null;
       saveState();
       return back(s.selected ? 'connected' : 'no-pages');
@@ -453,6 +543,7 @@ export function createApi(env = process.env, fetcher = fetch) {
   });
   app.post('/api/meta/disconnect', (req, res) => {
     req.studio.pages = [];
+    req.studio.permissions = [];
     req.studio.selected = null;
     delete req.studio.oauth;
     saveState();
@@ -577,6 +668,21 @@ export function createApi(env = process.env, fetcher = fetch) {
     res.json(publicJob(job));
   });
 
+  // Human reconciliation is an acknowledgement, not a Meta-confirmed publication.
+  // It never changes a job to published and never initiates a retry.
+  app.post('/api/schedule/:id/reconcile', (req, res) => {
+    const job = jobs.find((j) => j.id === req.params.id && j.sessionId === req.studio.id);
+    if (!job) return res.status(404).json({ error: 'Scheduled post not found.' });
+    if (job.status !== 'uncertain') return res.status(409).json({ error: 'Only uncertain jobs can be reviewed.' });
+    if (req.body?.confirmedReview !== true)
+      return res.status(400).json({ error: 'Confirm that each destination was checked manually.' });
+    job.status = 'reviewed';
+    job.reconciliation = { reviewedAt: new Date().toISOString(), method: 'manual-destination-check', outcome: 'not-verified-by-server' };
+    job.updatedAt = job.reconciliation.reviewedAt;
+    notify(job.sessionId, 'warning', 'Uncertain publication marked reviewed by the user; no Meta publication status was verified.', job.id);
+    res.json(publicJob(job));
+  });
+
   app.post('/api/schedule/:id/retry', (req, res) => {
     const job = jobs.find((j) => j.id === req.params.id && j.sessionId === req.studio.id);
     if (!job) return res.status(404).json({ error: 'Scheduled post not found.' });
@@ -596,6 +702,7 @@ export function createApi(env = process.env, fetcher = fetch) {
   });
 
   let processing = false;
+  let closing = false;
   async function processDueJobs() {
     if (processing) return;
     processing = true;
@@ -608,7 +715,8 @@ export function createApi(env = process.env, fetcher = fetch) {
         if (job.status !== 'scheduled') continue;
         const s = sessions.get(job.sessionId),
           p = s && s.pages.find((x) => x.id === job.pageId);
-        if (!ready || !p) {
+        const required = ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts', ...(job.platforms.includes('instagram') ? ['instagram_basic', 'instagram_content_publish'] : [])];
+        if (!ready || !p || s.until < Date.now() || required.some((permission) => !s.permissions?.includes(permission)) || (job.platforms.includes('instagram') && !p.ig?.id)) {
           job.status = 'failed';
           job.lastError = 'Reconnect your Meta account to resume this scheduled post.';
           job.updatedAt = new Date().toISOString();
@@ -648,7 +756,7 @@ export function createApi(env = process.env, fetcher = fetch) {
           job.results = results;
           job.lastError =
             results.find((r) => !r.ok)?.error || 'Meta did not confirm the scheduled post.';
-          job.status = 'failed';
+          job.status = 'uncertain';
           job.lastError += ' Check each destination before creating another job; the outcome may be uncertain.';
           notify(job.sessionId, 'error', `Scheduled post needs review: ${job.lastError}`, job.id);
           job.updatedAt = new Date().toISOString();
@@ -657,11 +765,12 @@ export function createApi(env = process.env, fetcher = fetch) {
       }
     } finally {
       processing = false;
+      if (closing) release();
     }
   }
   for (const job of jobs) {
     if (job.status === 'publishing') {
-      job.status = 'failed';
+      job.status = 'uncertain';
       job.publishAttempted = true;
       job.lastError = 'Server restarted during publication. Check each destination before creating another job; the outcome is unknown.';
       job.updatedAt = new Date().toISOString();
@@ -671,6 +780,19 @@ export function createApi(env = process.env, fetcher = fetch) {
   const scheduler = setInterval(processDueJobs, Math.max(1000, tickMs));
   scheduler.unref();
   processDueJobs();
+  app.shutdown = () => {
+    closing = true;
+    clearInterval(timer);
+    clearInterval(scheduler);
+    // Never release the lease while a Meta request is still in flight.
+    if (!processing) release();
+  };
+  const listen = app.listen.bind(app);
+  app.listen = (...args) => {
+    const server = listen(...args);
+    server.once('close', app.shutdown);
+    return server;
+  };
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Unknown workspace endpoint.' }));
   app.use((err, req, res, next) => {

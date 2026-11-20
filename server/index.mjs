@@ -6,9 +6,14 @@ try {
 } catch {}
 const app = express();
 app.disable('x-powered-by');
-app.use(createApi());
+const api = createApi();
+app.use(api);
 app.use(express.static('dist'));
 app.get('/{*path}', (req, res) => res.sendFile(path.resolve('dist/index.html')));
-app.listen(Number(process.env.PORT) || 3000, '0.0.0.0', () =>
+const server = app.listen(Number(process.env.PORT) || 3000, '0.0.0.0', () =>
   console.log('AstroSivam Studio is ready.'),
 );
+server.once('close', api.shutdown);
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, () => server.close());
+}

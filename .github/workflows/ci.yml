@@ -1,0 +1,44 @@
+name: Studio checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run build
+  visual-diversity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Render every subject and enforce the existing similarity threshold
+        run: |
+          STUDIO_AUDIT_ONLY=1 npm run dev -- --port 5173 > /tmp/studio.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          AUDIT_ENFORCE=1 node scripts/audit-visuals.mjs 0 0.97 > visual-audit-ci.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rendered-visual-audit
+          path: visual-audit-ci.json
+          if-no-files-found: warn

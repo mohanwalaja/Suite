@@ -253,11 +253,11 @@ function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
     mid = mix(base, foil, 0.15),
     line = rgba(foil, 0.68);
   paper(c, h, base);
-  // Word-led service notices need no picture: a generous typographic field, fine rules and
-  // alternating centred/left hierarchies give each of the 150 designs a different shape.
+  // Word-led notices retain the exact service message, with several editorial layouts.
+  // These layout families are not a claim that all 150 outputs are visually distinct.
   if (m.wordPoster) {
     trim(c, h, foil, false);
-    const variant = (m.sequence || m.id) % 6;
+    const variant = (m.sequence || m.id) % 9;
     let x = 110,
       width = 780,
       top = 0.25,
@@ -302,7 +302,7 @@ function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
       stroke(c, 78, h * 0.15, 400, h * 0.66, line, 1.2);
       stroke(c, 522, h * 0.15, 400, h * 0.66, line, 1.2);
       rule(c, 500, h * 0.14, 500, h * 0.82, foil, 1.5);
-    } else {
+    } else if (variant === 5) {
       rect(c, 150, h * 0.15, 700, h * 0.62, mid);
       stroke(c, 162, h * 0.16, 676, h * 0.6, line, 1.2);
       for (let i = 0; i < 6; i++) rule(c, 150 + i * 116, h * 0.15, 150, h * 0.15 + i * 96, rgba(foil, 0.22), 1);
@@ -310,6 +310,36 @@ function paintArtBase(c, h, m, palette, im, art, adjust = {}, deityIm = null) {
       width = 620;
       top = 0.26;
       bottom = 0.69;
+    } else if (variant === 6) {
+      // Editorial: an open lower text column below a substantial ruled masthead.
+      rect(c, 64, h * 0.13, 872, h * 0.18, mid);
+      for (let i = 0; i < 5; i++) rule(c, 95, h * (0.16 + i * 0.027), 905, h * (0.16 + i * 0.027), line, 1);
+      x = 112;
+      width = 690;
+      top = 0.37;
+      bottom = 0.76;
+      centred = false;
+      rule(c, 850, h * 0.36, 850, h * 0.78, foil, 3);
+    } else if (variant === 7) {
+      // Geometric: a tall architectural rail alongside a compact inset copy field.
+      rect(c, 68, h * 0.15, 220, h * 0.66, mid);
+      for (let i = 0; i < 5; i++) disc(c, 178, h * (0.22 + i * 0.13), 35, null, line);
+      stroke(c, 326, h * 0.19, 590, h * 0.57, line, 1.5);
+      x = 362;
+      width = 518;
+      top = 0.27;
+      bottom = 0.68;
+      centred = false;
+    } else {
+      // Contemporary: a broad asymmetric paper band with generous clear space.
+      rect(c, 70, h * 0.32, 860, h * 0.43, mid);
+      rule(c, 70, h * 0.32, 930, h * 0.32, foil, 2);
+      rule(c, 70, h * 0.75, 930, h * 0.75, foil, 2);
+      for (let i = 0; i < 7; i++) lozenge(c, 194 + i * 102, h * 0.22, 9, foil);
+      x = 126;
+      width = 748;
+      top = 0.38;
+      bottom = 0.68;
     }
     ticks(c, x, h * Math.min(bottom + 0.05, 0.82), width, rgba(foil, 0.5));
     lozenge(c, 104, h * 0.17, 5, foil);

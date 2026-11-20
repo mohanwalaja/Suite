@@ -638,8 +638,9 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
     }
   }
   async function jobAction(id, action) {
+    if (action === 'reconcile' && !window.confirm('Have you checked every destination in Meta? This records your review only; it does not verify or publish the post.')) return;
     try {
-      const job = await api(`/schedule/${encodeURIComponent(id)}/${action}`, { method: 'POST', body: '{}' });
+      const job = await api(`/schedule/${encodeURIComponent(id)}/${action}`, { method: 'POST', body: JSON.stringify(action === 'reconcile' ? { confirmedReview: true } : {}) });
       setScheduled(job);
       await refreshJobs();
       notify(`Publication job ${job.status}.`);
@@ -812,6 +813,11 @@ export function PublishDialog({ design, meta, onClose, onConnect, onSuccess, onD
                         onClick={() => jobAction(j.id, 'cancel')}
                       >
                         <Ban size={14} />
+                      </button>
+                    )}
+                    {j.status === 'uncertain' && (
+                      <button className="small-tool" disabled={busy} onClick={() => jobAction(j.id, 'reconcile')}>
+                        Mark manually reviewed
                       </button>
                     )}
                     {j.retryAllowed && (

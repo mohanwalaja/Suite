@@ -7,13 +7,28 @@ export default defineConfig(({ mode }) => ({
     {
       name: 'astrosivam-workspace-api',
       configureServer(server) {
-        server.middlewares.use(createApi({ ...process.env, ...loadEnv(mode, process.cwd(), '') }));
+        if (process.env.STUDIO_AUDIT_ONLY === '1') return;
+        const api = createApi({ ...process.env, ...loadEnv(mode, process.cwd(), '') });
+        server.middlewares.use(api);
+        server.httpServer?.once('close', api.shutdown);
       },
       configurePreviewServer(server) {
-        server.middlewares.use(createApi({ ...process.env, ...loadEnv(mode, process.cwd(), '') }));
+        const api = createApi({ ...process.env, ...loadEnv(mode, process.cwd(), '') });
+        server.middlewares.use(api);
+        server.httpServer?.once('close', api.shutdown);
       },
     },
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/lucide-react/')) return 'icons';
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) return 'react';
+        },
+      },
+    },
+  },
   server: { host: '0.0.0.0', port: 5173, allowedHosts: true },
   preview: { host: '0.0.0.0', allowedHosts: true },
 }));

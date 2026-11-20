@@ -4,6 +4,7 @@
 // Usage: CHROMIUM_PATH=/path/to/chrome node scripts/audit-visuals.mjs [subjectLimit] [threshold]
 import { chromium } from '@playwright/test';
 import { writeFileSync, readFileSync } from 'node:fs';
+import { visualAuditPasses } from './visual-gate.mjs';
 
 const limit = Number(process.argv[2] || 0);
 const threshold = Number(process.argv[3] || 0.97);
@@ -34,6 +35,7 @@ try {
     worst: 0,
     threshold,
     issues: [],
+    subjectsReport: [],
   };
   if (totals.threshold !== threshold || totals.subjects > subjects.length)
     throw Error('Checkpoint does not match this audit configuration.');
@@ -76,6 +78,7 @@ try {
           return same / BITS;
         };
         const issues = [];
+        const subjectsReport = [];
         let rendered = 0,
           compared = 0,
           exact = 0,
@@ -91,6 +94,7 @@ try {
             signs.push(signature());
             rendered++;
           }
+          const conflicts = Array.from({ length: signs.length }, () => new Set());
           let subjectNear = 0,
             subjectExact = 0,
             peak = 0,
@@ -103,6 +107,8 @@ try {
               if (s >= threshold) {
                 near++;
                 subjectNear++;
+                conflicts[i].add(j);
+                conflicts[j].add(i);
               }
               if (s === 1) {
                 exact++;
@@ -113,6 +119,18 @@ try {
                 pair = [i, j];
               }
             }
+          // This greedy subset has no pairs above the threshold. It is NOT a count of
+          // genuinely distinct compositions: the coarse pixel test needs manual review.
+          const candidates = [];
+          for (let i = 0; i < signs.length; i++)
+            if (candidates.every((previous) => !conflicts[i].has(previous))) candidates.push(i);
+          subjectsReport.push({
+            subject: topic.id, name: topic.name, rendered: signs.length,
+            flaggedPairs: subjectNear, identicalSignatures: subjectExact,
+            thresholdPassingCandidates: candidates.length,
+            genuinelyDistinctVerified: null,
+            status: subjectNear ? 'failed-screen' : 'manual-review-required',
+          });
           if (subjectNear || subjectExact)
             issues.push({
               subject: topic.id,
@@ -122,7 +140,7 @@ try {
               pair,
             });
         }
-        return { rendered, compared, exact, near, worst, issues };
+        return { rendered, compared, exact, near, worst, issues, subjectsReport };
       },
       { batch, threshold },
     );
@@ -133,6 +151,7 @@ try {
     totals.near += part.near;
     totals.worst = Math.max(totals.worst, part.worst);
     totals.issues.push(...part.issues);
+    totals.subjectsReport.push(...part.subjectsReport);
     console.error(`${totals.subjects}/${subjects.length} subjects, ${totals.rendered} renders`);
     if (process.env.AUDIT_CHECKPOINT)
       writeFileSync(process.env.AUDIT_CHECKPOINT, JSON.stringify(totals, null, 2));
@@ -150,6 +169,10 @@ try {
   totals.worst = Number(totals.worst.toFixed(4));
   totals.issues.sort((a, b) => b.near - a.near || b.peak - a.peak);
   console.log(JSON.stringify(totals, null, 2));
+  if (process.env.AUDIT_ENFORCE === '1' && !visualAuditPasses(totals)) {
+    console.error('Visual screening failed or did not cover the full catalogue; manual review remains required even after a passing screen.');
+    process.exitCode = 1;
+  }
 } finally {
   await browser.close();
 }
