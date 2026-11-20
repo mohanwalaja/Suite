@@ -67,6 +67,16 @@ export const PLATES = {
   'fest-akshaya-tritiya': 'The Lakshmi Abundance',
   'fest-rama-navami': 'The Rama Court',
   'fest-hanuman-jayanti': 'The Hanuman Lamp',
+  'fest-dhanteras': 'The Dhanvantari Lakshmi Shrine',
+  'fest-govardhan-puja': 'The Govardhan Hill',
+  'fest-saraswati-puja': 'The Veena Offering',
+  'fest-ayudha-puja': 'The Blessed Instruments',
+  'fest-varalakshmi-vratam': 'The Varalakshmi Kalash',
+  'fest-mahalaya': 'The Dawn Durga',
+  'fest-attukal-pongala': 'The Pongala pots',
+  'fest-bonalu': 'The Bonalu Pot',
+  'fest-bathukamma': 'The Flower Throne',
+  'fest-hartalika-teej': 'The Moonlit Vow',
 };
 
 // These replacements were painted with the subject's own deity as the central figure.
@@ -77,6 +87,16 @@ export const DEITY_IN_PLATE = new Set([
   'fest-akshaya-tritiya',
   'fest-rama-navami',
   'fest-hanuman-jayanti',
+  'fest-dhanteras',
+  'fest-govardhan-puja',
+  'fest-saraswati-puja',
+  'fest-ayudha-puja',
+  'fest-varalakshmi-vratam',
+  'fest-mahalaya',
+  'fest-attukal-pongala',
+  'fest-bonalu',
+  'fest-bathukamma',
+  'fest-hartalika-teej',
 ]);
 
 export const plateFor = (topic) => (topic && Object.hasOwn(PLATES, topic.id) ? topic.id : null);
